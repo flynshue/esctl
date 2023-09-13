@@ -37,3 +37,9 @@ func TestGetNodeVersion(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestListShardCount(t *testing.T) {
+	if err := listShardCount(); err != nil {
+		t.Error(err)
+	}
+}

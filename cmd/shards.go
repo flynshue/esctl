@@ -28,6 +28,22 @@ var listShardsCmd = &cobra.Command{
 	},
 }
 
+var listShardCountCmd = &cobra.Command{
+	Use:   "count",
+	Short: "List shard count for each node",
+	Long: `
+A good rule-of-thumb is to ensure you keep the number of shards per node below 20 per GB heap it 
+has configured. A node with a 30GB heap should therefore have a maximum of 600 shards, but the 
+further below this limit you can keep it the better. This will generally help the cluster 
+stay in good health.
+
+Source: https://www.elastic.co/blog/how-many-shards-should-i-have-in-my-elasticsearch-cluster
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return listShardCount()
+	},
+}
+
 var getShardsCmd = &cobra.Command{
 	Use:     "shards",
 	Aliases: []string{"shard"},
@@ -189,6 +205,7 @@ func init() {
 	getCmd.AddCommand(getShardsCmd)
 	getShardsCmd.AddCommand(getShardAllocationsCmd)
 	listCmd.AddCommand(listShardsCmd)
+	listShardsCmd.AddCommand(listShardCountCmd)
 	listShardsCmd.Flags().StringVarP(&shardSort, "sort", "s", "desc", "sort shard by size. Valid values are asc or desc. Default is desc.")
 	listShardsCmd.Flags().StringVar(&nodeName, "node", "", "filter shards based on node name")
 	disableCmd.AddCommand(disableShardCmd)

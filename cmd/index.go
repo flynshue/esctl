@@ -204,7 +204,7 @@ func listIndexTemplatesLegacy(pattern string) error {
 		return err
 	}
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
-	fmt.Fprintf(w, "name\t index_pattern\t order\t\n")
+	fmt.Fprintln(w, "name\t index_pattern\t order\t")
 	for name, t := range templates {
 		fmt.Fprintf(w, "%s\t %v\t %d\t\n", name, t.Patterns, t.Order)
 	}

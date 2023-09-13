@@ -14,17 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type nodeInfoResp struct {
-	Nodes map[string]nodeSettings `json:"nodes"`
-}
-
-type nodeSettings struct {
-	Name    string   `json:"name"`
-	IP      string   `json:"ip"`
-	Version string   `json:"version"`
-	Roles   []string `json:"roles"`
-}
-
 // nodesCmd represents the nodes command
 var nodesCmd = &cobra.Command{
 	Use:     "nodes",
@@ -149,20 +138,25 @@ func catNodes(h, s string) ([]byte, error) {
 }
 
 func listNodeFSDetails() error {
-	resp, err := client.Nodes.Stats(client.Nodes.Stats.WithHuman(),
-		client.Nodes.Stats.WithPretty(),
-		client.Nodes.Stats.WithMetric("fs"),
-	)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	b, err := getNodeStats("fs", "")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(b))
 	return nil
+}
+
+func getNodeStats(metric, filterPath string) ([]byte, error) {
+	resp, err := client.Nodes.Stats(client.Nodes.Stats.WithHuman(),
+		client.Nodes.Stats.WithPretty(),
+		client.Nodes.Stats.WithMetric(metric),
+		client.Nodes.Stats.WithFilterPath(filterPath),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
 func listNodesInfo() (*nodeInfoResp, error) {
@@ -184,13 +178,31 @@ func listNodesInfo() (*nodeInfoResp, error) {
 	return nodes, nil
 }
 
+func listShardCount() error {
+	b, err := getNodeStats("indices", "nodes.**.name,nodes.**.indices.shard_stats.total_count")
+	if err != nil {
+		return err
+	}
+	nodeStats := &nodeStatsResp{}
+	if err := json.Unmarshal(b, nodeStats); err != nil {
+		return err
+	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	fmt.Fprintln(w, "name\t shard_count\t")
+	for _, n := range nodeStats.Nodes {
+		fmt.Fprintf(w, "%s\t %d\t\n", n.Name, n.IndexStats.Total)
+	}
+	w.Flush()
+	return nil
+}
+
 func listNodesVersion() error {
 	nodes, err := listNodesInfo()
 	if err != nil {
 		return err
 	}
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
-	fmt.Fprintf(w, "node\t elastic-version\t ip\t roles\t\n")
+	fmt.Fprintln(w, "node\t elastic-version\t ip\t roles\t")
 	for _, node := range nodes.Nodes {
 		roles := strings.Join(node.Roles, "")
 		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t\n", node.Name, node.IP, node.Version, roles)
