@@ -9,21 +9,33 @@ import (
 var disableCmd = &cobra.Command{
 	Use:   "disable",
 	Short: "disable resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 }
 
 var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get details for a resource",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 }
 
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list information for resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 }
 
 var enableCmd = &cobra.Command{
 	Use:   "enable",
 	Short: "enable resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 }
 
 var (

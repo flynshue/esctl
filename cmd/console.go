@@ -21,6 +21,9 @@ var consoleCmd = &cobra.Command{
 	Use:     "console METHOD ENDPOINT",
 	Aliases: []string{"esc"},
 	Short:   "Send HTTP requests Elasticsearch REST API",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 	Long: `Interact with the REST APIs of Elasticsearch using http requests. This is useful for sending http requests to elasticsearch when we don't have commands built out for it yet.
 esctl console GET /my-index-000001
 esctl esc GET /my-index-000001

@@ -9,6 +9,9 @@ import (
 var clusterCmd = &cobra.Command{
 	Use:   "cluster",
 	Short: "show cluster info",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
 }
 
 type clusterSettings struct {
