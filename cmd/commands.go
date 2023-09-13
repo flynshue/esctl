@@ -38,6 +38,14 @@ var enableCmd = &cobra.Command{
 	},
 }
 
+var topCmd = &cobra.Command{
+	Use:   "top",
+	Short: "Show elastic cluster stats",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var (
 	// GitCommit is updated with the Git tag by the Goreleaser build
 	GitCommit = "unknown"
@@ -59,5 +67,5 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd)
+	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd)
 }
