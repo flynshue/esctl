@@ -163,9 +163,12 @@ func listIndexVersion(pattern string) error {
 	if err := json.Unmarshal(b, &idxs); err != nil {
 		return err
 	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	fmt.Fprintln(w, "index\t version\t")
 	for k, idx := range idxs {
-		fmt.Printf("index: %s, version:%s\n", k, idx.IndexVersion.Created)
+		fmt.Fprintf(w, "%s\t %s\t\n", k, idx.IndexVersion.Created)
 	}
+	w.Flush()
 	return nil
 }
 

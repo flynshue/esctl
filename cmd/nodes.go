@@ -25,7 +25,8 @@ var nodeStatsCmd = &cobra.Command{
 	Use:   "stats",
 	Short: "list ES nodes with usage statistics",
 	Long: `list ES nodes with usage statistics
-esctl get nodes stats`,
+Ex:
+esctl list nodes stats`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return listNodes()
 	},
@@ -35,7 +36,8 @@ var nodeSuffixesCmd = &cobra.Command{
 	Use:   "suffix",
 	Short: "list ES nodes name suffixes",
 	Long: `list ES nodes name suffixes
-esctl get nodes suffix`,
+Ex:
+esctl list nodes suffix`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		suffixes, err := listNodeNameSuffix()
 		if err != nil {
@@ -50,7 +52,8 @@ var nodeStorageCmd = &cobra.Command{
 	Use:   "storage",
 	Short: "list ES nodes HDD usage",
 	Long: `list ES nodes HDD usage
-esctl get nodes storage`,
+Ex:
+esctl list nodes storage`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return listNodeStorage()
 	},
@@ -61,17 +64,21 @@ var nodeFSDetailsCmd = &cobra.Command{
 	Aliases: []string{"fs"},
 	Short:   "list ES nodes filesystem details",
 	Long: `list ES nodes HDD usage
-esctl get nodes filesystem
-esctl get nodes fs`,
+Ex:
+esctl list nodes filesystem
+esctl list nodes fs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return listNodeFSDetails()
 	},
 }
 
 var nodeVersionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "list ES nodes version",
-	Long:  "esctl get nodes version",
+	Use:     "version",
+	Aliases: []string{"versions"},
+	Short:   "list ES nodes version",
+	Long: `list ES nodes version
+Ex:
+esctl list nodes version`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return listNodesVersion()
 	},
