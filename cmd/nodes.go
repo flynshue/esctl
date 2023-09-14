@@ -15,7 +15,7 @@ import (
 )
 
 // nodesCmd represents the nodes command
-var nodesCmd = &cobra.Command{
+var listNodesCmd = &cobra.Command{
 	Use:     "nodes",
 	Aliases: []string{"node"},
 	Short:   "show information about one or more node",
@@ -194,8 +194,8 @@ func listNodesVersion() error {
 }
 
 func init() {
-	getCmd.AddCommand(nodesCmd)
-	nodesCmd.AddCommand(nodeStatsCmd, nodeSuffixesCmd, nodeStorageCmd, nodeFSDetailsCmd, nodeVersionCmd)
+	listCmd.AddCommand(listNodesCmd)
+	listNodesCmd.AddCommand(nodeStatsCmd, nodeSuffixesCmd, nodeStorageCmd, nodeFSDetailsCmd, nodeVersionCmd)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
