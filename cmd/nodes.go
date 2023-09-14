@@ -178,24 +178,6 @@ func listNodesInfo() (*nodeInfoResp, error) {
 	return nodes, nil
 }
 
-func listShardCount() error {
-	b, err := getNodeStats("indices", "nodes.**.name,nodes.**.indices.shard_stats.total_count")
-	if err != nil {
-		return err
-	}
-	nodeStats := &nodeStatsResp{}
-	if err := json.Unmarshal(b, nodeStats); err != nil {
-		return err
-	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
-	fmt.Fprintln(w, "name\t shard_count\t")
-	for _, n := range nodeStats.Nodes {
-		fmt.Fprintf(w, "%s\t %d\t\n", n.Name, n.IndexStats.Total)
-	}
-	w.Flush()
-	return nil
-}
-
 func listNodesVersion() error {
 	nodes, err := listNodesInfo()
 	if err != nil {

@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -198,6 +200,26 @@ func listShardsForNode(node string) error {
 			fmt.Println(scanner.Text())
 		}
 	}
+	return nil
+}
+
+func listShardCount() error {
+	b, err := getNodeStats("indices", "nodes.**.name,nodes.**.indices.shard_stats.total_count")
+	if err != nil {
+		return err
+	}
+	nodeStats := &nodeStatsResp{}
+	if err := json.Unmarshal(b, nodeStats); err != nil {
+		return err
+	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	fmt.Fprintln(w, "name\t shard_count\t")
+	for _, n := range nodeStats.Nodes {
+		if strings.Contains(n.Name, "data") {
+			fmt.Fprintf(w, "%s\t %d\t\n", n.Name, n.IndexStats.Total)
+		}
+	}
+	w.Flush()
 	return nil
 }
 
