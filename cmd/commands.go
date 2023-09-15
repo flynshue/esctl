@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -46,6 +48,31 @@ var topCmd = &cobra.Command{
 	},
 }
 
+var listCommands = &cobra.Command{
+	Use:     "commands",
+	Short:   "List all the commands available",
+	Aliases: []string{"cmd", "cmds", "command"},
+	Run: func(cmd *cobra.Command, args []string) {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+		commandTree(w, cmd.Root())
+		w.Flush()
+	},
+}
+
+func commandTree(w *tabwriter.Writer, cmd *cobra.Command) {
+	for _, c := range cmd.Commands() {
+		if c.Name() == "help" {
+			continue
+		}
+		if c.Short != "" {
+			fmt.Fprintf(w, "%s\t %s\t\n", c.UseLine(), c.Short)
+		}
+		if c.HasSubCommands() {
+			commandTree(w, c)
+		}
+	}
+}
+
 var (
 	// GitCommit is updated with the Git tag by the Goreleaser build
 	GitCommit = "unknown"
@@ -67,5 +94,5 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd)
+	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands)
 }
