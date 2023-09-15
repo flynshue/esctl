@@ -45,5 +45,5 @@ func getClusterSettings(filterPath string) ([]byte, error) {
 }
 
 func init() {
-	getCmd.AddCommand(clusterCmd)
+	// getCmd.AddCommand(clusterCmd)
 }

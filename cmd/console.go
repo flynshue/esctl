@@ -18,16 +18,32 @@ var (
 
 // consoleCmd represents the console command
 var consoleCmd = &cobra.Command{
-	Use:     "console METHOD ENDPOINT",
+	Use:     "console [METHOD] [ENDPOINT]",
 	Aliases: []string{"esc"},
 	Short:   "Send HTTP requests Elasticsearch REST API",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
 	},
-	Long: `Interact with the REST APIs of Elasticsearch using http requests. This is useful for sending http requests to elasticsearch when we don't have commands built out for it yet.
+	Long: "Interact with the REST APIs of Elasticsearch using http requests. This is useful for sending http requests to elasticsearch when we don't have commands built out for it yet.",
+
+	Example: `
+# basic example
 esctl console GET /my-index-000001
+
+# command alias
 esctl esc GET /my-index-000001
-`,
+
+# without leading "/"
+esctl esc GET my-index-000001
+
+# supplying request data
+esctl esc put /customer/_doc/1 -d \
+'{
+	"name": "John Doe"
+}'
+
+# supplying request data from file
+esctl esc put /customer/_doc/2 -f /tmp/test-doc.json `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 || len(args) < 2 {
 			return fmt.Errorf("must supply method and endpoint")

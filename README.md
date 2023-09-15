@@ -61,6 +61,7 @@ password: fakePass
 
 ## Usage
 Every command has built in help and should give a pretty good idea on how to to use it.
+See [Command Reference](docs/esctl.md) for a complete list all of commands and their usage.
 
 Here's some example usage
 
