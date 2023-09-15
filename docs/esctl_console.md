@@ -5,12 +5,32 @@ Send HTTP requests Elasticsearch REST API
 ### Synopsis
 
 Interact with the REST APIs of Elasticsearch using http requests. This is useful for sending http requests to elasticsearch when we don't have commands built out for it yet.
-esctl console GET /my-index-000001
-esctl esc GET /my-index-000001
-
 
 ```
-esctl console METHOD ENDPOINT [flags]
+esctl console [METHOD] [ENDPOINT] [flags]
+```
+
+### Examples
+
+```
+
+# basic example
+esctl console GET /my-index-000001
+
+# command alias
+esctl esc GET /my-index-000001
+
+# without leading "/"
+esctl esc GET my-index-000001
+
+# supplying request data
+esctl esc put /customer/_doc/1 -d \
+'{
+	"name": "John Doe"
+}'
+
+# supplying request data from file
+esctl esc put /customer/_doc/2 -f /tmp/test-doc.json 
 ```
 
 ### Options

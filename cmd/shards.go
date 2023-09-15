@@ -19,7 +19,7 @@ var (
 )
 
 var listShardsCmd = &cobra.Command{
-	Use:     "shards",
+	Use:     "shards [command]",
 	Aliases: []string{"shard"},
 	Short:   "show information about one or more shard",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -47,7 +47,7 @@ Source: https://www.elastic.co/blog/how-many-shards-should-i-have-in-my-elastics
 }
 
 var getShardsCmd = &cobra.Command{
-	Use:     "shards",
+	Use:     "shards [command]",
 	Aliases: []string{"shard"},
 	Short:   "show information about one or more shard",
 }
@@ -62,7 +62,7 @@ var getShardAllocationsCmd = &cobra.Command{
 }
 
 var disableShardCmd = &cobra.Command{
-	Use:     "shards",
+	Use:     "shards [command]",
 	Aliases: []string{"shard"},
 }
 
@@ -76,7 +76,7 @@ var disableShardAllocationsCmd = &cobra.Command{
 }
 
 var enableShardCmd = &cobra.Command{
-	Use:     "shards",
+	Use:     "shards [command]",
 	Aliases: []string{"shard"},
 }
 

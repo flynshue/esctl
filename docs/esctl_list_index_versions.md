@@ -2,18 +2,19 @@
 
 show index creation version
 
-### Synopsis
+```
+esctl list index versions [index pattern] [flags]
+```
 
-show index creation version
+### Examples
+
+```
 # list all indexes and their versions
 esctl list index versions
 
 # list all indexes and their versions for pattern
 esctl list index versions watch*
 
-
-```
-esctl list index versions [index pattern] [flags]
 ```
 
 ### Options

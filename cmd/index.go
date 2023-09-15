@@ -17,14 +17,14 @@ var legacy bool
 
 // indexCmd represents the index command
 var getIndexCmd = &cobra.Command{
-	Use:     "index",
+	Use:     "index [command]",
 	Aliases: []string{"idx"},
-	Short:   "show information about one or more index",
+	Short:   "get detailed information about one or more index",
 }
 
 // indexCmd represents the index command
 var listIndexCmd = &cobra.Command{
-	Use:     "index",
+	Use:     "index [command]",
 	Aliases: []string{"idx"},
 	Short:   "show information about one or more index",
 }
@@ -34,9 +34,6 @@ var idxSizesCmd = &cobra.Command{
 	Use:     "sizes",
 	Aliases: []string{"size"},
 	Short:   "show index sizes sorted (big -> small)",
-	Long: `show index sizes sorted (big -> small)
-ex: esctl list all indexes and their sizes
-`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return showIdxSizes()
 	},
@@ -46,8 +43,7 @@ ex: esctl list all indexes and their sizes
 var idxVersionCmd = &cobra.Command{
 	Use:   "versions [index pattern]",
 	Short: "show index creation version",
-	Long: `show index creation version
-# list all indexes and their versions
+	Example: `# list all indexes and their versions
 esctl list index versions
 
 # list all indexes and their versions for pattern
@@ -63,14 +59,14 @@ esctl list index versions watch*
 }
 
 var listIndexTemplatesCmd = &cobra.Command{
-	Use:     "template [name]",
+	Use:     "template [template name pattern]",
 	Aliases: []string{"templates"},
 	Short:   "get one or more index templates",
-	Long: `# List all index templates and their index patterns
+	Example: `# List all index templates and their index patterns
 esctl list index template
 
 # Get list index templates that match template pattern
-esctl list index template logs
+esctl list index template .monit*
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		pattern := "*"
@@ -88,7 +84,7 @@ var getIndexTemplateCmd = &cobra.Command{
 	Use:     "template [name]",
 	Aliases: []string{"templates"},
 	Short:   "get details for index template",
-	Long: `# Get details on for index template
+	Example: `# Get details on for index template
 esctl get index template .monitoring-beats
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {

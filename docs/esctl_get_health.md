@@ -2,10 +2,6 @@
 
 show cluster health
 
-### Synopsis
-
-esctl get health
-
 ```
 esctl get health [flags]
 ```

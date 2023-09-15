@@ -6,6 +6,18 @@ Watch elasticsearch recovery queue
 esctl top recovery [flags]
 ```
 
+### Examples
+
+```
+
+# basic example
+esctl top recovery
+
+# alias
+esctl top recov
+	
+```
+
 ### Options
 
 ```

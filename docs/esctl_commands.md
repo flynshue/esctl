@@ -3,7 +3,7 @@
 List all the commands available
 
 ```
-esctl commands [flags]
+esctl commands [command] [flags]
 ```
 
 ### Options

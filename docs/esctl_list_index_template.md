@@ -2,17 +2,19 @@
 
 get one or more index templates
 
-### Synopsis
+```
+esctl list index template [template name pattern] [flags]
+```
 
+### Examples
+
+```
 # List all index templates and their index patterns
 esctl list index template
 
 # Get list index templates that match template pattern
-esctl list index template logs
+esctl list index template .monit*
 
-
-```
-esctl list index template [name] [flags]
 ```
 
 ### Options

@@ -2,12 +2,6 @@
 
 list ES nodes with usage statistics
 
-### Synopsis
-
-list ES nodes with usage statistics
-Ex:
-esctl list nodes stats
-
 ```
 esctl list nodes stats [flags]
 ```

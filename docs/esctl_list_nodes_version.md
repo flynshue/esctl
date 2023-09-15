@@ -2,14 +2,19 @@
 
 list ES nodes version
 
-### Synopsis
-
-list ES nodes version
-Ex:
-esctl list nodes version
-
 ```
 esctl list nodes version [flags]
+```
+
+### Examples
+
+```
+# basic usage
+esctl list nodes version
+
+# using alias
+esctl list nodes versions
+
 ```
 
 ### Options

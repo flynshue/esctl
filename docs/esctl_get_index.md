@@ -1,6 +1,6 @@
 ## esctl get index
 
-show information about one or more index
+get detailed information about one or more index
 
 ### Options
 

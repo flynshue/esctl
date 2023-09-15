@@ -2,12 +2,6 @@
 
 show index sizes sorted (big -> small)
 
-### Synopsis
-
-show index sizes sorted (big -> small)
-ex: esctl list all indexes and their sizes
-
-
 ```
 esctl list index sizes [flags]
 ```

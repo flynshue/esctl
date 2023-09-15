@@ -2,12 +2,6 @@
 
 list ES nodes HDD usage
 
-### Synopsis
-
-list ES nodes HDD usage
-Ex:
-esctl list nodes storage
-
 ```
 esctl list nodes storage [flags]
 ```

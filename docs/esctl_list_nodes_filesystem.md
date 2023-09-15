@@ -2,15 +2,18 @@
 
 list ES nodes filesystem details
 
-### Synopsis
-
-list ES nodes HDD usage
-Ex:
-esctl list nodes filesystem
-esctl list nodes fs
-
 ```
 esctl list nodes filesystem [flags]
+```
+
+### Examples
+
+```
+# basic usage
+esctl list nodes filesystem
+
+# using alias
+esctl list nodes fs
 ```
 
 ### Options

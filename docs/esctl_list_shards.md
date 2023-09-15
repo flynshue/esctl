@@ -3,7 +3,7 @@
 show information about one or more shard
 
 ```
-esctl list shards [flags]
+esctl list shards [command] [flags]
 ```
 
 ### Options

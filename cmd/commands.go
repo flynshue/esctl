@@ -17,7 +17,7 @@ var disableCmd = &cobra.Command{
 }
 
 var getCmd = &cobra.Command{
-	Use:   "get",
+	Use:   "get [command]",
 	Short: "get details for a resource",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
@@ -25,7 +25,7 @@ var getCmd = &cobra.Command{
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "list [command]",
 	Short: "list information for resource/s",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
@@ -33,7 +33,7 @@ var listCmd = &cobra.Command{
 }
 
 var enableCmd = &cobra.Command{
-	Use:   "enable",
+	Use:   "enable [command]",
 	Short: "enable resource/s",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
@@ -41,7 +41,7 @@ var enableCmd = &cobra.Command{
 }
 
 var topCmd = &cobra.Command{
-	Use:   "top",
+	Use:   "top [command]",
 	Short: "Show elastic cluster stats",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
@@ -49,7 +49,7 @@ var topCmd = &cobra.Command{
 }
 
 var listCommands = &cobra.Command{
-	Use:     "commands",
+	Use:     "commands [command]",
 	Short:   "List all the commands available",
 	Aliases: []string{"cmd", "cmds", "command"},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -64,9 +64,7 @@ func commandTree(w *tabwriter.Writer, cmd *cobra.Command) {
 		if c.Name() == "help" {
 			continue
 		}
-		if c.Short != "" {
-			fmt.Fprintf(w, "%s\t %s\t\n", c.UseLine(), c.Short)
-		}
+		fmt.Fprintf(w, "%s\t %s\t\n", c.UseLine(), c.Short)
 		if c.HasSubCommands() {
 			commandTree(w, c)
 		}

@@ -14,7 +14,6 @@ import (
 var healthCmd = &cobra.Command{
 	Use:   "health",
 	Short: "show cluster health",
-	Long:  `esctl get health`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return showHealth()
 	},
@@ -24,6 +23,13 @@ var topRecoveryCmd = &cobra.Command{
 	Use:     "recovery",
 	Aliases: []string{"recov"},
 	Short:   "Watch elasticsearch recovery queue",
+	Example: `
+# basic example
+esctl top recovery
+
+# alias
+esctl top recov
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		topRecovery()
 	},

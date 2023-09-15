@@ -2,12 +2,6 @@
 
 list ES nodes name suffixes
 
-### Synopsis
-
-list ES nodes name suffixes
-Ex:
-esctl list nodes suffix
-
 ```
 esctl list nodes suffix [flags]
 ```
