@@ -43,8 +43,9 @@ var idxSizesCmd = &cobra.Command{
 
 // idxVersionCmd represents the idxVersion command
 var idxVersionCmd = &cobra.Command{
-	Use:   "versions [index pattern]",
-	Short: "show index creation version",
+	Use:     "versions [index pattern]",
+	Aliases: []string{"version"},
+	Short:   "show index creation version",
 	Example: `# list all indexes and their versions
 esctl list index versions
 
@@ -105,16 +106,16 @@ esctl list index date .fleet*
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			return listIndexDate("*")
+			return listIndexDate([]string{"*"})
 		}
-		return listIndexDate(args[0])
+		return listIndexDate(args)
 	},
 }
 
 func showIdxSizes() error {
 	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
 	sort := "store.size:desc"
-	b, err := catIndices(columns, sort, "*", "")
+	b, err := catIndices(columns, sort, "", []string{"*"})
 	if err != nil {
 		return err
 	}
@@ -122,10 +123,10 @@ func showIdxSizes() error {
 	return nil
 }
 
-func listIndexDate(idxPattern string) error {
+func listIndexDate(idxPattern []string) error {
 	columns := "index,pri,rep,docs.count,docs.deleted,store.size,creation.date"
 	sort := "creation.date"
-	b, err := catIndices(columns, sort, idxPattern, "json")
+	b, err := catIndices(columns, sort, "json", idxPattern)
 	if err != nil {
 		return err
 	}
@@ -144,14 +145,14 @@ func listIndexDate(idxPattern string) error {
 	return nil
 }
 
-func catIndices(columns, sort, idxPattern, format string) ([]byte, error) {
+func catIndices(columns, sort, format string, idxPattern []string) ([]byte, error) {
 	resp, err := client.Cat.Indices(client.Cat.Indices.WithH(columns),
 		client.Cat.Indices.WithS(sort),
 		client.Cat.Indices.WithBytes("gb"),
 		client.Cat.Indices.WithV(true),
 		client.Cat.Indices.WithFormat(format),
 		client.Cat.Indices.WithPretty(),
-		client.Cat.Indices.WithIndex(idxPattern),
+		client.Cat.Indices.WithIndex(idxPattern...),
 	)
 	if err != nil {
 		return nil, err

@@ -26,7 +26,7 @@ type indexTemplateSettings struct {
 
 type CatIndexResp struct {
 	Index         string `json:"index"`
-	PrimaryShards string `json"pri"`
+	PrimaryShards string `json:"pri"`
 	ReplicaShards string `json:"rep"`
 	Docs          string `json:"docs.count"`
 	DeletedDocs   string `json:"docs.deleted"`

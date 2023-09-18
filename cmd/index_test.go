@@ -60,11 +60,12 @@ func TestListIndexDate(t *testing.T) {
 	testCases := []struct {
 		name       string
 		local      bool
-		idxPattern string
+		idxPattern []string
 	}{
-		{"UTC", false, "*"},
-		{"LocalTime", true, "*"},
-		{"IndexPattern", false, ".fleet*"},
+		{"UTC", false, []string{"*"}},
+		{"LocalTime", true, []string{"*"}},
+		{"IndexPattern", false, []string{".fleet*"}},
+		{"MultiIndexPattern", false, []string{".fleet*", "cust*"}},
 	}
 	for _, tc := range testCases {
 		localTime = tc.local
