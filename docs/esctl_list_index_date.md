@@ -3,7 +3,15 @@
 list all indexes with their creation date
 
 ```
-esctl list index date [flags]
+esctl list index date [idx Pattern] [flags]
+```
+
+### Examples
+
+```
+# List indexes and their creation date that match index pattern .fleet*
+esctl list index date .fleet*
+	
 ```
 
 ### Options
