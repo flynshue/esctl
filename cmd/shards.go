@@ -6,9 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -212,7 +210,7 @@ func listShardCount() error {
 	if err := json.Unmarshal(b, nodeStats); err != nil {
 		return err
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	w := newTabWriter()
 	fmt.Fprintln(w, "name\t shard_count\t")
 	for _, n := range nodeStats.Nodes {
 		if strings.Contains(n.Name, "data") {

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -53,7 +52,7 @@ var listCommands = &cobra.Command{
 	Short:   "List all the commands available",
 	Aliases: []string{"cmd", "cmds", "command"},
 	Run: func(cmd *cobra.Command, args []string) {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+		w := newTabWriter()
 		commandTree(w, cmd.Root())
 		w.Flush()
 	},

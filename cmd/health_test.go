@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -15,10 +14,7 @@ func TestShowHealth(t *testing.T) {
 func TestEstopRecovery(t *testing.T) {
 	c := make(chan string)
 	go scan(c)
-	go watcher(func() error {
-		fmt.Println("test watcher func")
-		return nil
-	})
+	go watcher(catRecovery)
 	timeout := time.After(time.Second * 5)
 	select {
 	case <-c:

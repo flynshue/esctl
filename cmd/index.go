@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
 
-var legacy bool
+var (
+	legacy    bool
+	localTime bool
+)
 
 // indexCmd represents the index command
 var getIndexCmd = &cobra.Command{
@@ -95,47 +97,67 @@ esctl get index template .monitoring-beats
 	},
 }
 
-type listIndexVersionResp struct {
-	IndexSettings `json:"settings"`
-}
-
-type IndexSettings struct {
-	Index `json:"index"`
-}
-
-type Index struct {
-	IndexVersion `json:"version"`
-}
-
-type IndexVersion struct {
-	Created string `json:"created_string"`
-}
-
-type indexTemplateLegacyResp map[string]indexTemplateSettings
-
-type indexTemplateSettings struct {
-	Patterns []string `json:"index_patterns"`
-	Order    int      `json:"order"`
-	Version  int      `json:"version"`
+var listIndexDateCmd = &cobra.Command{
+	Use:   "date [idx Pattern]",
+	Short: "list all indexes with their creation date",
+	Example: `# List indexes and their creation date that match index pattern .fleet*
+esctl list index date .fleet*
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return listIndexDate("*")
+		}
+		return listIndexDate(args[0])
+	},
 }
 
 func showIdxSizes() error {
-	resp, err := client.Cat.Indices(client.Cat.Indices.WithH("index,pri,rep,docs.count,store.size,pri.store.size"),
-		client.Cat.Indices.WithHuman(),
-		client.Cat.Indices.WithS("store.size:desc"),
-		client.Cat.Indices.WithBytes("gb"),
-		client.Cat.Indices.WithV(true),
-	)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
+	sort := "store.size:desc"
+	b, err := catIndices(columns, sort, "*", "")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(b))
 	return nil
+}
+
+func listIndexDate(idxPattern string) error {
+	columns := "index,pri,rep,docs.count,docs.deleted,store.size,creation.date"
+	sort := "creation.date"
+	b, err := catIndices(columns, sort, idxPattern, "json")
+	if err != nil {
+		return err
+	}
+	indices := []CatIndexResp{}
+	err = json.Unmarshal(b, &indices)
+	if err != nil {
+		return err
+	}
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t primary_shards\t replica_shards\t docs\t deleted_docs\t store_size\t creation_date\t")
+	for _, idx := range indices {
+		date := parseCreateDate(idx.Date, localTime)
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t\n", idx.Index, idx.PrimaryShards, idx.ReplicaShards, idx.Docs, idx.DeletedDocs, idx.StoreSize, date)
+	}
+	w.Flush()
+	return nil
+}
+
+func catIndices(columns, sort, idxPattern, format string) ([]byte, error) {
+	resp, err := client.Cat.Indices(client.Cat.Indices.WithH(columns),
+		client.Cat.Indices.WithS(sort),
+		client.Cat.Indices.WithBytes("gb"),
+		client.Cat.Indices.WithV(true),
+		client.Cat.Indices.WithFormat(format),
+		client.Cat.Indices.WithPretty(),
+		client.Cat.Indices.WithIndex(idxPattern),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
 func listIndexVersion(pattern string) error {
@@ -159,7 +181,7 @@ func listIndexVersion(pattern string) error {
 	if err := json.Unmarshal(b, &idxs); err != nil {
 		return err
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	w := newTabWriter()
 	fmt.Fprintln(w, "index\t version\t")
 	for k, idx := range idxs {
 		fmt.Fprintf(w, "%s\t %s\t\n", k, idx.IndexVersion.Created)
@@ -202,7 +224,7 @@ func listIndexTemplatesLegacy(pattern string) error {
 	if err := json.Unmarshal(b, &templates); err != nil {
 		return err
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	w := newTabWriter()
 	fmt.Fprintln(w, "name\t index_pattern\t order\t")
 	for name, t := range templates {
 		fmt.Fprintf(w, "%s\t %v\t %d\t\n", name, t.Patterns, t.Order)
@@ -243,8 +265,9 @@ func init() {
 	getCmd.AddCommand(getIndexCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd)
+	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
+	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 
 	// Here you will define your flags and configuration settings.
 

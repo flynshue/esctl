@@ -1,15 +1,16 @@
-## esctl list index sizes
+## esctl list index date
 
-show index sizes sorted (big -> small)
+list all indexes with their creation date
 
 ```
-esctl list index sizes [flags]
+esctl list index date [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for sizes
+  -h, --help    help for date
+      --local   display index creation timestamps in local time instead of UTC. Default is false.
 ```
 
 ### Options inherited from parent commands
