@@ -23,5 +23,6 @@ idx
 ### SEE ALSO
 
 * [esctl get](esctl_get.md)	 - get details for a resource
+* [esctl get index settings](esctl_get_index_settings.md)	 - get full details of settings for index/index pattern
 * [esctl get index template](esctl_get_index_template.md)	 - get details for index template
 

@@ -4,10 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -29,6 +31,12 @@ var listIndexCmd = &cobra.Command{
 	Use:     "index [command]",
 	Aliases: []string{"idx"},
 	Short:   "show information about one or more index",
+}
+
+var setIndexCmd = &cobra.Command{
+	Use:     "index [command]",
+	Aliases: []string{"idx"},
+	Short:   "set configuration on index",
 }
 
 // idxSizesCmd represents the idxSizes command
@@ -112,6 +120,79 @@ esctl list index date .fleet*
 	},
 }
 
+var listIndexSettingsCmd = &cobra.Command{
+	Use:     "settings [index pattern]",
+	Aliases: []string{"config", "cfg"},
+	Short:   "list indexes with a summary of settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas",
+	Example: `# List all indexes with summary of settings
+esctl list index settings
+
+# List indexes matching pattern with summary of settings
+esctl list index settings .fleet-*
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return listIndexSettingsSummary("*")
+		}
+		return listIndexSettingsSummary(args[0])
+	},
+}
+
+var getIndexSettingsCmd = &cobra.Command{
+	Use:     "settings [index pattern]",
+	Aliases: []string{"config", "cfg"},
+	Short:   "get full details of settings for index/index pattern",
+	Example: `# Get index settings details for specific index
+esctl get index settings .fleet-file-data-agent-000001
+
+# Get index settings details for index pattern
+esctl get index settings .fleet-*
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index or index pattern")
+		}
+		b, err := getIndexSettings(args[0])
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		return nil
+	},
+}
+
+var setIndexReplicasCmd = &cobra.Command{
+	Use:     "replicas [index] [number of replicas]",
+	Aliases: []string{"replica", "rep"},
+	Short:   "set the number of replicas for an index",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index and number of replicas")
+		}
+		idx := args[0]
+		rep, err := strconv.Atoi(args[1])
+		if err != nil {
+			return err
+		}
+		return setIndexReplicas(idx, rep)
+	},
+}
+
+func setIndexReplicas(index string, rep int) error {
+	body := `{
+		"index": {
+		  "number_of_replicas": %d
+
+		 }
+	   }`
+	b, err := setIndexSettings(index, fmt.Sprintf(body, rep))
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func showIdxSizes() error {
 	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
 	sort := "store.size:desc"
@@ -178,7 +259,7 @@ func listIndexVersion(pattern string) error {
 	if err != nil {
 		return err
 	}
-	idxs := map[string]listIndexVersionResp{}
+	idxs := map[string]listIndexSettingsResp{}
 	if err := json.Unmarshal(b, &idxs); err != nil {
 		return err
 	}
@@ -262,11 +343,54 @@ func getIndexTemplate(name string) error {
 	return nil
 }
 
+func listIndexSettingsSummary(idxPattern string) error {
+	b, err := getIndexSettings(idxPattern)
+	if err != nil {
+		return err
+	}
+	idxs := make(map[string]listIndexSettingsResp)
+	if err := json.Unmarshal(b, &idxs); err != nil {
+		return err
+	}
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t ilm_policy\t ilm_rollover_alias\t num_replicas\t num_shards\t auto_expand\t")
+	for idx, s := range idxs {
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t\n", idx, s.Lifecycle.Name, s.Lifecycle.RolloverAlias, s.NumberOfReplicas, s.NumberOfShards, s.AutoExpand)
+	}
+	w.Flush()
+	return nil
+}
+
+func getIndexSettings(idxPattern string) ([]byte, error) {
+	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithIndex(idxPattern),
+		client.Indices.GetSettings.WithExpandWildcards("all"),
+		client.Indices.GetSettings.WithHuman(),
+		client.Indices.GetSettings.WithPretty(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+func setIndexSettings(index, body string) ([]byte, error) {
+	buf := bytes.NewBufferString(body)
+	resp, err := client.Indices.PutSettings(buf, client.Indices.PutSettings.WithIndex(index))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
 func init() {
 	getCmd.AddCommand(getIndexCmd)
-	getIndexCmd.AddCommand(getIndexTemplateCmd)
+	setCmd.AddCommand(setIndexCmd)
+	setIndexCmd.AddCommand(setIndexReplicasCmd)
+	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd)
+	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 

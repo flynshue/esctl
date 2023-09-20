@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestListIndexVersion(t *testing.T) {
+func TestIndex_ListIndexVersion(t *testing.T) {
 	testCases := []struct {
 		name    string
 		pattern string
@@ -21,13 +21,13 @@ func TestListIndexVersion(t *testing.T) {
 	}
 }
 
-func TestShowIdxSizes(t *testing.T) {
+func TestIndex_ShowIdxSizes(t *testing.T) {
 	if err := showIdxSizes(); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestListIndexTemplates(t *testing.T) {
+func TestIndex_ListIndexTemplates(t *testing.T) {
 	testCases := []struct {
 		name    string
 		pattern string
@@ -44,19 +44,19 @@ func TestListIndexTemplates(t *testing.T) {
 	}
 }
 
-func TestGetIndexTemplate(t *testing.T) {
+func TestIndex_GetIndexTemplate(t *testing.T) {
 	if err := getIndexTemplate("logs"); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestListIndexTemplatesLegacy(t *testing.T) {
+func TestIndex_ListIndexTemplatesLegacy(t *testing.T) {
 	if err := listIndexTemplatesLegacy("*"); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestListIndexDate(t *testing.T) {
+func TestIndex_ListIndexDate(t *testing.T) {
 	testCases := []struct {
 		name       string
 		local      bool
@@ -74,5 +74,37 @@ func TestListIndexDate(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestIndex_GetIndexSettings(t *testing.T) {
+	testCases := []struct {
+		name       string
+		idxPattern string
+	}{
+		{"all", "*"},
+		{"indexPattern", ".fleet-*"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := listIndexSettingsSummary(tc.idxPattern); err != nil {
+				t.Error(err)
+			}
+		})
+
+	}
+}
+
+func TestIndex_SetIndexReplicas(t *testing.T) {
+	index := "test-idx-replicas"
+	if err := console("put", index, nil); err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		console("delete", index, nil)
+	}()
+	setIndexReplicas(index, 3)
+	if err := listIndexSettingsSummary(index); err != nil {
+		t.Error()
 	}
 }

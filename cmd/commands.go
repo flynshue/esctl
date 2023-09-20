@@ -74,6 +74,14 @@ var listCommands = &cobra.Command{
 	},
 }
 
+var explainCmd = &cobra.Command{
+	Use:   "explain [command]",
+	Short: "Provides explanation for cluster settings/allocations on resources",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 func commandTree(w *tabwriter.Writer, cmd *cobra.Command) {
 	for _, c := range cmd.Commands() {
 		if c.Name() == "help" {
@@ -107,5 +115,6 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands, setCmd, resetCmd)
+	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
+		versionCmd, topCmd, listCommands, setCmd, resetCmd, explainCmd)
 }

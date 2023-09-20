@@ -16,6 +16,7 @@ CLI tool for interacting with elasticsearch API
 * [esctl console](esctl_console.md)	 - Send HTTP requests Elasticsearch REST API
 * [esctl disable](esctl_disable.md)	 - disable resource/s
 * [esctl enable](esctl_enable.md)	 - enable resource/s
+* [esctl explain](esctl_explain.md)	 - Provides explanation for cluster settings/allocations on resources
 * [esctl get](esctl_get.md)	 - get details for a resource
 * [esctl list](esctl_list.md)	 - list information for resource/s
 * [esctl reset](esctl_reset.md)	 - reset to default for resource/s

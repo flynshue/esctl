@@ -65,6 +65,22 @@ var resetRebalanceThrottleCmd = &cobra.Command{
 	},
 }
 
+var explainClusterAllocationCmd = &cobra.Command{
+	Use:     "allocations",
+	Aliases: []string{"alloc"},
+	Short:   "Provides an explanation for a shard's current allocation. Typically used to explain unassigned shards.",
+	Long:    "Elasticsearch retrieves an allocation explanation for an arbitrary unassigned primary or replica shard.",
+	Example: `# explain shard allocations
+esctl explain allocations
+
+# using cmd alias
+esctl explain alloc
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return explainClusterAllocation()
+	},
+}
+
 func getClusterRebalance() error {
 	b, err := getClusterSettings("**.cluster.routing.allocation,**.indices.recovery.max_bytes_per_sec")
 	if err != nil {
@@ -153,6 +169,22 @@ func resetRebalanceThrottle() error {
 	return nil
 }
 
+func explainClusterAllocation() error {
+	resp, err := client.Cluster.AllocationExplain(client.Cluster.AllocationExplain.WithHuman(),
+		client.Cluster.AllocationExplain.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func putClusterSettings(body string) ([]byte, error) {
 	b := bytes.NewBufferString(body)
 	resp, err := client.Cluster.PutSettings(b)
@@ -167,4 +199,5 @@ func init() {
 	getCmd.AddCommand(getRebalanceCmd)
 	setCmd.AddCommand(setRebalanceThrottleCmd)
 	resetCmd.AddCommand(resetRebalanceThrottleCmd)
+	explainCmd.AddCommand(explainClusterAllocationCmd)
 }
