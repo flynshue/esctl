@@ -40,3 +40,9 @@ func TestCluster_ResetRebalanceThrottle(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestCluster_ExplainClusterAllocation(t *testing.T) {
+	if err := explainClusterAllocation(); err != nil {
+		t.Error(err)
+	}
+}
