@@ -17,5 +17,6 @@ configure settings on a resource
 ### SEE ALSO
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
+* [esctl set index](esctl_set_index.md)	 - set configuration on index
 * [esctl set rebalance-throttle](esctl_set_rebalance-throttle.md)	 - Set bytes per sec routing allocations for rebalancing and recoveries
 

@@ -94,3 +94,17 @@ func TestIndex_GetIndexSettings(t *testing.T) {
 
 	}
 }
+
+func TestIndex_SetIndexReplicas(t *testing.T) {
+	index := "test-idx-replicas"
+	if err := console("put", index, nil); err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		console("delete", index, nil)
+	}()
+	setIndexReplicas(index, 3)
+	if err := listIndexSettingsSummary(index); err != nil {
+		t.Error()
+	}
+}

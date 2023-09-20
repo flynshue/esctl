@@ -4,10 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -29,6 +31,12 @@ var listIndexCmd = &cobra.Command{
 	Use:     "index [command]",
 	Aliases: []string{"idx"},
 	Short:   "show information about one or more index",
+}
+
+var setIndexCmd = &cobra.Command{
+	Use:     "index [command]",
+	Aliases: []string{"idx"},
+	Short:   "set configuration on index",
 }
 
 // idxSizesCmd represents the idxSizes command
@@ -151,6 +159,38 @@ esctl get index settings .fleet-*
 		fmt.Println(string(b))
 		return nil
 	},
+}
+
+var setIndexReplicasCmd = &cobra.Command{
+	Use:     "replicas [index] [number of replicas]",
+	Aliases: []string{"replica", "rep"},
+	Short:   "set the number of replicas for an index",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index and number of replicas")
+		}
+		idx := args[0]
+		rep, err := strconv.Atoi(args[1])
+		if err != nil {
+			return err
+		}
+		return setIndexReplicas(idx, rep)
+	},
+}
+
+func setIndexReplicas(index string, rep int) error {
+	body := `{
+		"index": {
+		  "number_of_replicas": %d
+
+		 }
+	   }`
+	b, err := setIndexSettings(index, fmt.Sprintf(body, rep))
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
 }
 
 func showIdxSizes() error {
@@ -334,8 +374,20 @@ func getIndexSettings(idxPattern string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+func setIndexSettings(index, body string) ([]byte, error) {
+	buf := bytes.NewBufferString(body)
+	resp, err := client.Indices.PutSettings(buf, client.Indices.PutSettings.WithIndex(index))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
 func init() {
 	getCmd.AddCommand(getIndexCmd)
+	setCmd.AddCommand(setIndexCmd)
+	setIndexCmd.AddCommand(setIndexReplicasCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
 	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
