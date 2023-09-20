@@ -1,17 +1,21 @@
-## esctl get shards
+## esctl get rebalance-throttle
 
-show information about one or more shard
+show routing allocations for rebalancing and recoveries
+
+```
+esctl get rebalance-throttle [flags]
+```
 
 ### Aliases
 
 ```
-shard
+throttle
 ```
 
 ### Options
 
 ```
-  -h, --help   help for shards
+  -h, --help   help for rebalance-throttle
 ```
 
 ### Options inherited from parent commands
@@ -23,5 +27,4 @@ shard
 ### SEE ALSO
 
 * [esctl get](esctl_get.md)	 - get details for a resource
-* [esctl get shards allocations](esctl_get_shards_allocations.md)	 - Get shard routing allocation
 

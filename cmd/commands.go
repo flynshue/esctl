@@ -47,6 +47,22 @@ var topCmd = &cobra.Command{
 	},
 }
 
+var setCmd = &cobra.Command{
+	Use:   "set [command]",
+	Short: "configure settings on a resource",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
+var resetCmd = &cobra.Command{
+	Use:   "reset [command]",
+	Short: "reset to default for resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var listCommands = &cobra.Command{
 	Use:     "commands [command]",
 	Short:   "List all the commands available",
@@ -91,5 +107,5 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands)
+	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands, setCmd, resetCmd)
 }

@@ -1,37 +1,71 @@
 package cmd
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
+	units "github.com/docker/go-units"
 	"github.com/spf13/cobra"
 )
+
+type catShardsJsonResp struct {
+	Index  string `json:"index"`
+	Shard  string `json:"shard"`
+	State  string `json:"state"`
+	PriRep string `json:"prirep"`
+	Docs   string `json:"docs"`
+	Store  string `json:"store"`
+	IP     string `json:"ip"`
+	Node   string `json:"node"`
+}
 
 var (
 	shardSort string
 	nodeName  string
+	bigger    string
 )
 
 var listShardsCmd = &cobra.Command{
 	Use:     "shards [command]",
 	Aliases: []string{"shard"},
 	Short:   "show information about one or more shard",
+	Example: `# List all shards for every node
+esctl list shards
+
+# List all shards for specific node
+esctl list shards --node es-data-03
+	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if nodeName == "" {
 			return listShards()
 		}
-		return listShardsForNode(nodeName)
+		// switch {
+		// case bigger != "":
+		// 	return listShardsNodeBigger(nodeName, bigger)
+		// default:
+		// 	shards, err := listShardsForNode(nodeName)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	printShards(shards)
+		// }
+		shards, err := listShardsForNode(nodeName)
+		if err != nil {
+			return err
+		}
+		printShards(shards)
+
+		return nil
 	},
 }
 
 var listShardCountCmd = &cobra.Command{
 	Use:   "count",
 	Short: "List shard count for each node",
-	Long: `
+	Long: `List shard count for each node
+
 A good rule-of-thumb is to ensure you keep the number of shards per node below 20 per GB heap it 
 has configured. A node with a 30GB heap should therefore have a maximum of 600 shards, but the 
 further below this limit you can keep it the better. This will generally help the cluster 
@@ -106,40 +140,28 @@ func getShardAllocations() error {
 }
 
 func disableShardAllocations() error {
-	settings := map[string]clusterSettings{"transient": {Cluster{Routing{Allocation{Enable: "none"}}}}}
-	b, err := json.Marshal(&settings)
+	b, err := setShardAllocations("none")
 	if err != nil {
 		return err
-	}
-	buf := bytes.NewBuffer(b)
-	resp, err := client.Cluster.PutSettings(buf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	b, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil
 	}
 	fmt.Println(string(b))
 	return nil
 }
 
+func setShardAllocations(enable string) ([]byte, error) {
+	body := `{
+		"transient": {
+		  "cluster.routing.allocation.enable":   "%s"
+		}
+	   }`
+	return putClusterSettings(fmt.Sprintf(body, enable))
+
+}
+
 func enableShardAllocations() error {
-	settings := map[string]clusterSettings{"transient": {Cluster{Routing{Allocation{Enable: "all"}}}}}
-	b, err := json.Marshal(&settings)
+	b, err := setShardAllocations("all")
 	if err != nil {
 		return err
-	}
-	buf := bytes.NewBuffer(b)
-	resp, err := client.Cluster.PutSettings(buf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	b, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil
 	}
 	fmt.Println(string(b))
 	return nil
@@ -163,42 +185,63 @@ func listShards() error {
 	return nil
 }
 
-func listShardsJson() error {
-	resp, err := client.Cat.Shards(client.Cat.Shards.WithHuman(),
-		client.Cat.Shards.WithPretty(),
-		client.Cat.Shards.WithS("store:desc,index,shard"),
-		client.Cat.Shards.WithV(true),
-		client.Cat.Shards.WithFormat("json"),
-	)
+func listShardsNodeBigger(node, size string) error {
+	resp, err := listShardsForNode(node)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
+	limit, _ := units.FromHumanSize(size)
+	shards := make([]catShardsJsonResp, 0, len(resp))
+	for _, r := range resp {
+		s, _ := units.FromHumanSize(r.Store)
+		if s >= limit {
+			shards = append(shards, r)
+		}
 	}
-	fmt.Println(string(b))
+	printShards(shards)
 	return nil
 }
 
-func listShardsForNode(node string) error {
+func catShards(format string) ([]byte, error) {
 	resp, err := client.Cat.Shards(client.Cat.Shards.WithHuman(),
 		client.Cat.Shards.WithPretty(),
 		client.Cat.Shards.WithS(fmt.Sprintf("store:%s,index,shard", shardSort)),
 		client.Cat.Shards.WithV(true),
+		client.Cat.Shards.WithFormat(format),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
-	scanner := bufio.NewScanner(resp.Body)
-	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), node) {
-			fmt.Println(scanner.Text())
+	return io.ReadAll(resp.Body)
+}
+
+func listShardsForNode(node string) ([]catShardsJsonResp, error) {
+	b, err := catShards("json")
+	if err != nil {
+		return nil, err
+	}
+	resp := []catShardsJsonResp{}
+	if err := json.Unmarshal(b, &resp); err != nil {
+		return nil, err
+	}
+	shards := make([]catShardsJsonResp, 0, len(resp))
+	for _, r := range resp {
+		if r.Node == node {
+			shards = append(shards, r)
 		}
 	}
-	return nil
+	return shards, nil
+}
+
+func printShards(shards []catShardsJsonResp) {
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t shard\t prirep\t state\t docs\t store\t ip\t node\t")
+	for _, shard := range shards {
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t %s\t\n",
+			shard.Index, shard.Shard, shard.PriRep, shard.State, shard.Docs, shard.Store, shard.IP, shard.Node)
+	}
+	w.Flush()
 }
 
 func listShardCount() error {
@@ -228,6 +271,7 @@ func init() {
 	listShardsCmd.AddCommand(listShardCountCmd)
 	listShardsCmd.Flags().StringVarP(&shardSort, "sort", "s", "desc", "sort shard by size. Valid values are asc or desc. Default is desc.")
 	listShardsCmd.Flags().StringVar(&nodeName, "node", "", "filter shards based on node name")
+	// listShardsCmd.Flags().StringVar(&bigger, "big", "", "show shards bigger than or equal to size on node, i.e 1gb, 50gb. This only works when supplying --node")
 	disableCmd.AddCommand(disableShardCmd)
 	disableShardCmd.AddCommand(disableShardAllocationsCmd)
 	enableCmd.AddCommand(enableShardCmd)

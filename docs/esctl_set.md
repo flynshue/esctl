@@ -1,11 +1,11 @@
-## esctl top
+## esctl set
 
-Show elastic cluster stats
+configure settings on a resource
 
 ### Options
 
 ```
-  -h, --help   help for top
+  -h, --help   help for set
 ```
 
 ### Options inherited from parent commands
@@ -17,5 +17,5 @@ Show elastic cluster stats
 ### SEE ALSO
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
-* [esctl top recovery](esctl_top_recovery.md)	 - Watch elasticsearch recovery queue
+* [esctl set rebalance-throttle](esctl_set_rebalance-throttle.md)	 - Set bytes per sec routing allocations for rebalancing and recoveries
 

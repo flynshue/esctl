@@ -1,11 +1,11 @@
-## esctl top
+## esctl reset
 
-Show elastic cluster stats
+reset to default for resource/s
 
 ### Options
 
 ```
-  -h, --help   help for top
+  -h, --help   help for reset
 ```
 
 ### Options inherited from parent commands
@@ -17,5 +17,5 @@ Show elastic cluster stats
 ### SEE ALSO
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
-* [esctl top recovery](esctl_top_recovery.md)	 - Watch elasticsearch recovery queue
+* [esctl reset rebalance-throttle](esctl_reset_rebalance-throttle.md)	 - reset routing allocations for rebalancing, recovery, and throttle to defaults.
 
