@@ -24,7 +24,7 @@ idx
 
 * [esctl list](esctl_list.md)	 - list information for resource/s
 * [esctl list index date](esctl_list_index_date.md)	 - list all indexes with their creation date
-* [esctl list index settings](esctl_list_index_settings.md)	 - list indexes with their settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas
+* [esctl list index settings](esctl_list_index_settings.md)	 - list indexes with a summary of settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas
 * [esctl list index sizes](esctl_list_index_sizes.md)	 - show index sizes sorted (big -> small)
 * [esctl list index template](esctl_list_index_template.md)	 - get one or more index templates
 * [esctl list index versions](esctl_list_index_versions.md)	 - show index creation version

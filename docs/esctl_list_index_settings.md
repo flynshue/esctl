@@ -1,6 +1,6 @@
 ## esctl list index settings
 
-list indexes with their settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas
+list indexes with a summary of settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas
 
 ```
 esctl list index settings [index pattern] [flags]
@@ -15,11 +15,11 @@ config, cfg
 ### Examples
 
 ```
-# List all indexes with their settings
+# List all indexes with summary of settings
 esctl list index settings
 
-# List indexes matching pattern with their settings
-esctl list index .fleet-*
+# List indexes matching pattern with summary of settings
+esctl list index settings .fleet-*
 
 ```
 

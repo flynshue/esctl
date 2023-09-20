@@ -112,21 +112,44 @@ esctl list index date .fleet*
 	},
 }
 
-var listIndexSettings = &cobra.Command{
+var listIndexSettingsCmd = &cobra.Command{
 	Use:     "settings [index pattern]",
 	Aliases: []string{"config", "cfg"},
-	Short:   "list indexes with their settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas",
-	Example: `# List all indexes with their settings
+	Short:   "list indexes with a summary of settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas",
+	Example: `# List all indexes with summary of settings
 esctl list index settings
 
-# List indexes matching pattern with their settings
-esctl list index .fleet-*
+# List indexes matching pattern with summary of settings
+esctl list index settings .fleet-*
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return listIndexSettingsSummary("*")
 		}
 		return listIndexSettingsSummary(args[0])
+	},
+}
+
+var getIndexSettingsCmd = &cobra.Command{
+	Use:     "settings [index pattern]",
+	Aliases: []string{"config", "cfg"},
+	Short:   "get full details of settings for index/index pattern",
+	Example: `# Get index settings details for specific index
+esctl get index settings .fleet-file-data-agent-000001
+
+# Get index settings details for index pattern
+esctl get index settings .fleet-*
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index or index pattern")
+		}
+		b, err := getIndexSettings(args[0])
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		return nil
 	},
 }
 
@@ -313,9 +336,9 @@ func getIndexSettings(idxPattern string) ([]byte, error) {
 
 func init() {
 	getCmd.AddCommand(getIndexCmd)
-	getIndexCmd.AddCommand(getIndexTemplateCmd)
+	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettings)
+	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 
