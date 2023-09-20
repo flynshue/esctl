@@ -1,6 +1,6 @@
 package cmd
 
-type listIndexVersionResp struct {
+type listIndexSettingsResp struct {
 	IndexSettings `json:"settings"`
 }
 
@@ -9,7 +9,16 @@ type IndexSettings struct {
 }
 
 type Index struct {
-	IndexVersion `json:"version"`
+	IndexVersion     `json:"version"`
+	Lifecycle        `json:"lifecycle"`
+	NumberOfShards   string `json:"number_of_shards"`
+	AutoExpand       string `json:"auto_expand_replicas"`
+	NumberOfReplicas string `json:"number_of_replicas"`
+}
+
+type Lifecycle struct {
+	Name          string `json:"name"`
+	RolloverAlias string `json:"rollover_alias"`
 }
 
 type IndexVersion struct {

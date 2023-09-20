@@ -112,6 +112,24 @@ esctl list index date .fleet*
 	},
 }
 
+var listIndexSettings = &cobra.Command{
+	Use:     "settings [index pattern]",
+	Aliases: []string{"config", "cfg"},
+	Short:   "list indexes with their settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas",
+	Example: `# List all indexes with their settings
+esctl list index settings
+
+# List indexes matching pattern with their settings
+esctl list index .fleet-*
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return listIndexSettingsSummary("*")
+		}
+		return listIndexSettingsSummary(args[0])
+	},
+}
+
 func showIdxSizes() error {
 	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
 	sort := "store.size:desc"
@@ -178,7 +196,7 @@ func listIndexVersion(pattern string) error {
 	if err != nil {
 		return err
 	}
-	idxs := map[string]listIndexVersionResp{}
+	idxs := map[string]listIndexSettingsResp{}
 	if err := json.Unmarshal(b, &idxs); err != nil {
 		return err
 	}
@@ -262,11 +280,42 @@ func getIndexTemplate(name string) error {
 	return nil
 }
 
+func listIndexSettingsSummary(idxPattern string) error {
+	b, err := getIndexSettings(idxPattern)
+	if err != nil {
+		return err
+	}
+	idxs := make(map[string]listIndexSettingsResp)
+	if err := json.Unmarshal(b, &idxs); err != nil {
+		return err
+	}
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t ilm_policy\t ilm_rollover_alias\t num_replicas\t num_shards\t auto_expand\t")
+	for idx, s := range idxs {
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t\n", idx, s.Lifecycle.Name, s.Lifecycle.RolloverAlias, s.NumberOfReplicas, s.NumberOfShards, s.AutoExpand)
+	}
+	w.Flush()
+	return nil
+}
+
+func getIndexSettings(idxPattern string) ([]byte, error) {
+	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithIndex(idxPattern),
+		client.Indices.GetSettings.WithExpandWildcards("all"),
+		client.Indices.GetSettings.WithHuman(),
+		client.Indices.GetSettings.WithPretty(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
 func init() {
 	getCmd.AddCommand(getIndexCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd)
+	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettings)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 
