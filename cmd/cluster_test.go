@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestGetClusterSettings(t *testing.T) {
+func TestCluster_GetClusterSettings(t *testing.T) {
 	testCases := []struct {
 		name       string
 		filterPath string
@@ -20,5 +20,23 @@ func TestGetClusterSettings(t *testing.T) {
 			}
 			t.Log(string(b))
 		})
+	}
+}
+
+func TestCluster_GetClusterRebalance(t *testing.T) {
+	if err := getClusterRebalance(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCluster_SetClusterRebalance(t *testing.T) {
+	if err := setRebalanceThrottle(300); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCluster_ResetRebalanceThrottle(t *testing.T) {
+	if err := resetRebalanceThrottle(); err != nil {
+		t.Error(err)
 	}
 }

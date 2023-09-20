@@ -65,7 +65,8 @@ func catRecovery() error {
 		client.Cat.Recovery.WithBytes("gb"),
 		client.Cat.Recovery.WithV(true),
 		client.Cat.Recovery.WithS("time:desc,target_node,source_node,index"),
-		client.Cat.Recovery.WithH("index,shard,time,type,stage,source_node,target_node,files,files_recovered,files_percent,bytes_total,bytes_percent,translog_ops_recovered,translog_ops,translog_ops_percent"),
+		client.Cat.Recovery.WithH("index,shard,time,type,stage,source_node,target_node,files,files_recovered,files_percent,bytes_percent,translog_ops_recovered,translog_ops,translog_ops_percent"),
+		client.Cat.Recovery.WithHuman(),
 	)
 	if err != nil {
 		return err

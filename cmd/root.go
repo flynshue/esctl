@@ -7,7 +7,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
+	// "github.com/spf13/cobra/doc"
+	"github.com/flynshue/esctl/pkg/doc"
 	"github.com/spf13/viper"
 )
 
@@ -15,8 +16,9 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "esctl",
-	Short: "CLI tool for interacting with elasticsearch API",
+	Use:               "esctl",
+	Short:             "CLI tool for interacting with elasticsearch API",
+	DisableAutoGenTag: true,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

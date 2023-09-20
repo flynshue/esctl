@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -48,12 +47,28 @@ var topCmd = &cobra.Command{
 	},
 }
 
+var setCmd = &cobra.Command{
+	Use:   "set [command]",
+	Short: "configure settings on a resource",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
+var resetCmd = &cobra.Command{
+	Use:   "reset [command]",
+	Short: "reset to default for resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var listCommands = &cobra.Command{
 	Use:     "commands [command]",
 	Short:   "List all the commands available",
 	Aliases: []string{"cmd", "cmds", "command"},
 	Run: func(cmd *cobra.Command, args []string) {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+		w := newTabWriter()
 		commandTree(w, cmd.Root())
 		w.Flush()
 	},
@@ -92,5 +107,5 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands)
+	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd, versionCmd, topCmd, listCommands, setCmd, resetCmd)
 }

@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -185,11 +183,11 @@ func listNodesVersion() error {
 	if err != nil {
 		return err
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
+	w := newTabWriter()
 	fmt.Fprintln(w, "node\t elastic-version\t ip\t roles\t")
 	for _, node := range nodes.Nodes {
-		roles := strings.Join(node.Roles, "")
-		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t\n", node.Name, node.IP, node.Version, roles)
+		roles := strings.Join(node.Roles, " ")
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t\n", node.Name, node.Version, node.IP, roles)
 	}
 	w.Flush()
 	return nil

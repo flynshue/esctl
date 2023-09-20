@@ -2,7 +2,7 @@ package cmd
 
 import "testing"
 
-func TestListShards(t *testing.T) {
+func TestShards_ListShards(t *testing.T) {
 	testCases := []struct {
 		name string
 		sort string
@@ -20,31 +20,33 @@ func TestListShards(t *testing.T) {
 	}
 }
 
-// func TestListShardsJson(t *testing.T) {
-// 	if err := listShardsJson(); err != nil {
-// 		t.Error(err)
-// 	}
-// }
-
-func TestListShardsForNode(t *testing.T) {
-	if err := listShardsForNode("es-data-03"); err != nil {
+func TestShards_ListShardsNodeBigger(t *testing.T) {
+	if err := listShardsNodeBigger("es-data-03", "1kb"); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestDisableShardAllocations(t *testing.T) {
+func TestShards_ListShardsForNode(t *testing.T) {
+	shards, err := listShardsForNode("es-data-03")
+	if err != nil {
+		t.Error(err)
+	}
+	printShards(shards)
+}
+
+func TestShards_DisableShardAllocations(t *testing.T) {
 	if err := disableShardAllocations(); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestGetShardAllocations(t *testing.T) {
+func TestShards_GetShardAllocations(t *testing.T) {
 	if err := getShardAllocations(); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestEnableShardAllocations(t *testing.T) {
+func TestShards_EnableShardAllocations(t *testing.T) {
 	if err := enableShardAllocations(); err != nil {
 		t.Error(err)
 	}

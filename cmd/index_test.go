@@ -1,6 +1,8 @@
 package cmd
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestListIndexVersion(t *testing.T) {
 	testCases := []struct {
@@ -51,5 +53,26 @@ func TestGetIndexTemplate(t *testing.T) {
 func TestListIndexTemplatesLegacy(t *testing.T) {
 	if err := listIndexTemplatesLegacy("*"); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestListIndexDate(t *testing.T) {
+	testCases := []struct {
+		name       string
+		local      bool
+		idxPattern []string
+	}{
+		{"UTC", false, []string{"*"}},
+		{"LocalTime", true, []string{"*"}},
+		{"IndexPattern", false, []string{".fleet*"}},
+		{"MultiIndexPattern", false, []string{".fleet*", "cust*"}},
+	}
+	for _, tc := range testCases {
+		localTime = tc.local
+		t.Run(tc.name, func(t *testing.T) {
+			if err := listIndexDate(tc.idxPattern); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
