@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -10,7 +12,54 @@ import (
 var (
 	legacy    bool
 	localTime bool
+	force     bool
 )
+
+var deleteIndexCmd = &cobra.Command{
+	Use:     "index [command] [index pattern]",
+	Aliases: []string{"idx"},
+	Short:   "delete index/index pattern",
+	Long: `Starting with Elasticsearch 8.x, by default, the delete index API call does not support wildcards (*) or _all. 
+To use wildcards or _all, set the action.destructive_requires_name cluster setting to false.
+See https://www.elastic.co/guide/en/elasticsearch/reference/8.10/index-management-settings.html#action-destructive-requires-name
+	`,
+	Example: `# delete specific index
+esctl delete index test-logs
+
+# delete multiple index with index pattern
+esctl delete index test-logs-*
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index or index pattern")
+		}
+		if force {
+			fmt.Println("force")
+			return nil
+		}
+		b, err := catIndices("", "", "", args)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		fmt.Println("\nAre you sure you want to delete the indices? (y/n)")
+		scan := bufio.NewScanner(os.Stdin)
+		for scan.Scan() {
+			text := scan.Text()
+			switch text {
+			case "y":
+				fmt.Println("run delete stuff here")
+				return nil
+			case "n":
+				fmt.Println("cancel delete")
+				return nil
+			default:
+				fmt.Println("Decision must be literal 'y' or 'n', please try again")
+			}
+		}
+		return nil
+	},
+}
 
 // indexCmd represents the index command
 var getIndexCmd = &cobra.Command{
@@ -19,17 +68,42 @@ var getIndexCmd = &cobra.Command{
 	Short:   "get detailed information about one or more index",
 }
 
-// indexCmd represents the index command
-var listIndexCmd = &cobra.Command{
-	Use:     "index [command]",
-	Aliases: []string{"idx"},
-	Short:   "show information about one or more index",
+var getIndexSettingsCmd = &cobra.Command{
+	Use:     "settings [index pattern]",
+	Aliases: []string{"config", "cfg"},
+	Short:   "get full details of settings for index/index pattern",
+	Example: `# Get index settings details for specific index
+esctl get index settings .fleet-file-data-agent-000001
+
+# Get index settings details for index pattern
+esctl get index settings .fleet-*
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index or index pattern")
+		}
+		b, err := getIndexSettings(args[0])
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		return nil
+	},
 }
 
-var setIndexCmd = &cobra.Command{
-	Use:     "index [command]",
-	Aliases: []string{"idx"},
-	Short:   "set configuration on index",
+var getIndexTemplateCmd = &cobra.Command{
+	Use:     "template [name]",
+	Aliases: []string{"templates"},
+	Short:   "get details for index template",
+	Example: `# Get details on for index template
+esctl get index template .monitoring-beats
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply a template pattern")
+		}
+		return getIndexTemplate(args[0])
+	},
 }
 
 // idxSizesCmd represents the idxSizes command
@@ -62,41 +136,11 @@ esctl list index versions watch*
 	},
 }
 
-var listIndexTemplatesCmd = &cobra.Command{
-	Use:     "template [template name pattern]",
-	Aliases: []string{"templates"},
-	Short:   "get one or more index templates",
-	Example: `# List all index templates and their index patterns
-esctl list index template
-
-# Get list index templates that match template pattern
-esctl list index template .monit*
-`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pattern := "*"
-		if len(args) != 0 {
-			pattern = args[0]
-		}
-		if legacy {
-			return listIndexTemplatesLegacy("*")
-		}
-		return listIndexTemplates(pattern)
-	},
-}
-
-var getIndexTemplateCmd = &cobra.Command{
-	Use:     "template [name]",
-	Aliases: []string{"templates"},
-	Short:   "get details for index template",
-	Example: `# Get details on for index template
-esctl get index template .monitoring-beats
-	`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply a template pattern")
-		}
-		return getIndexTemplate(args[0])
-	},
+// indexCmd represents the index command
+var listIndexCmd = &cobra.Command{
+	Use:     "index [command]",
+	Aliases: []string{"idx"},
+	Short:   "show information about one or more index",
 }
 
 var listIndexDateCmd = &cobra.Command{
@@ -131,43 +175,25 @@ esctl list index settings .fleet-*
 	},
 }
 
-var getIndexSettingsCmd = &cobra.Command{
-	Use:     "settings [index pattern]",
-	Aliases: []string{"config", "cfg"},
-	Short:   "get full details of settings for index/index pattern",
-	Example: `# Get index settings details for specific index
-esctl get index settings .fleet-file-data-agent-000001
+var listIndexTemplatesCmd = &cobra.Command{
+	Use:     "template [template name pattern]",
+	Aliases: []string{"templates"},
+	Short:   "get one or more index templates",
+	Example: `# List all index templates and their index patterns
+esctl list index template
 
-# Get index settings details for index pattern
-esctl get index settings .fleet-*
+# Get list index templates that match template pattern
+esctl list index template .monit*
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply index or index pattern")
+		pattern := "*"
+		if len(args) != 0 {
+			pattern = args[0]
 		}
-		b, err := getIndexSettings(args[0])
-		if err != nil {
-			return err
+		if legacy {
+			return listIndexTemplatesLegacy("*")
 		}
-		fmt.Println(string(b))
-		return nil
-	},
-}
-
-var setIndexReplicasCmd = &cobra.Command{
-	Use:     "replicas [index] [number of replicas]",
-	Aliases: []string{"replica", "rep"},
-	Short:   "set the number of replicas for an index",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply index and number of replicas")
-		}
-		idx := args[0]
-		rep, err := strconv.Atoi(args[1])
-		if err != nil {
-			return err
-		}
-		return setIndexReplicas(idx, rep)
+		return listIndexTemplates(pattern)
 	},
 }
 
@@ -191,14 +217,39 @@ esctl set auto-expand test-logs-0001 false
 	},
 }
 
+var setIndexCmd = &cobra.Command{
+	Use:     "index [command]",
+	Aliases: []string{"idx"},
+	Short:   "set configuration on index",
+}
+
+var setIndexReplicasCmd = &cobra.Command{
+	Use:     "replicas [index] [number of replicas]",
+	Aliases: []string{"replica", "rep"},
+	Short:   "set the number of replicas for an index",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index and number of replicas")
+		}
+		idx := args[0]
+		rep, err := strconv.Atoi(args[1])
+		if err != nil {
+			return err
+		}
+		return setIndexReplicas(idx, rep)
+	},
+}
+
 func init() {
+	deleteCmd.AddCommand(deleteIndexCmd)
+	deleteIndexCmd.PersistentFlags().BoolVar(&force, "force", false, "If true, immediately delete without confirmation")
 	getCmd.AddCommand(getIndexCmd)
-	setCmd.AddCommand(setIndexCmd)
-	setIndexCmd.AddCommand(setIndexReplicasCmd, setIndexAutoExpandCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
 	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
+	setCmd.AddCommand(setIndexCmd)
+	setIndexCmd.AddCommand(setIndexReplicasCmd, setIndexAutoExpandCmd)
 
 }

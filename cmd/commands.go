@@ -7,9 +7,44 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var commandsCmd = &cobra.Command{
+	Use:     "commands [command]",
+	Short:   "List all the commands available",
+	Aliases: []string{"cmd", "cmds", "command"},
+	Run: func(cmd *cobra.Command, args []string) {
+		w := newTabWriter()
+		commandTree(w, cmd.Root())
+		w.Flush()
+	},
+}
+
+var deleteCmd = &cobra.Command{
+	Use:     "delete",
+	Aliases: []string{"del"},
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var disableCmd = &cobra.Command{
 	Use:   "disable",
 	Short: "disable resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
+var enableCmd = &cobra.Command{
+	Use:   "enable [command]",
+	Short: "enable resource/s",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
+var explainCmd = &cobra.Command{
+	Use:   "explain [command]",
+	Short: "Provides explanation for cluster settings/allocations on resources",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
 	},
@@ -31,17 +66,9 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var enableCmd = &cobra.Command{
-	Use:   "enable [command]",
-	Short: "enable resource/s",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		initEsClient()
-	},
-}
-
-var topCmd = &cobra.Command{
-	Use:   "top [command]",
-	Short: "Show elastic cluster stats",
+var resetCmd = &cobra.Command{
+	Use:   "reset [command]",
+	Short: "reset to default for resource/s",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
 	},
@@ -55,30 +82,22 @@ var setCmd = &cobra.Command{
 	},
 }
 
-var resetCmd = &cobra.Command{
-	Use:   "reset [command]",
-	Short: "reset to default for resource/s",
+var topCmd = &cobra.Command{
+	Use:   "top [command]",
+	Short: "Show elastic cluster stats",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
 	},
 }
 
-var listCommands = &cobra.Command{
-	Use:     "commands [command]",
-	Short:   "List all the commands available",
-	Aliases: []string{"cmd", "cmds", "command"},
+// versionCmd represents the version command
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "print the client version information",
 	Run: func(cmd *cobra.Command, args []string) {
-		w := newTabWriter()
-		commandTree(w, cmd.Root())
-		w.Flush()
-	},
-}
-
-var explainCmd = &cobra.Command{
-	Use:   "explain [command]",
-	Short: "Provides explanation for cluster settings/allocations on resources",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		initEsClient()
+		fmt.Println("Version:\t", Version)
+		fmt.Println("Git commit:\t", GitCommit)
+		fmt.Println("Date:\t\t", BuildDate)
 	},
 }
 
@@ -103,18 +122,8 @@ var (
 	Version = "unreleased"
 )
 
-// versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "print the client version information",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Version:\t", Version)
-		fmt.Println("Git commit:\t", GitCommit)
-		fmt.Println("Date:\t\t", BuildDate)
-	},
-}
-
 func init() {
 	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
-		versionCmd, topCmd, listCommands, setCmd, resetCmd, explainCmd)
+		versionCmd, topCmd, commandsCmd, setCmd,
+		resetCmd, explainCmd, deleteCmd)
 }

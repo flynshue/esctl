@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -65,7 +66,7 @@ func TestIndex_ListIndexDate(t *testing.T) {
 		{"UTC", false, []string{"*"}},
 		{"LocalTime", true, []string{"*"}},
 		{"IndexPattern", false, []string{".fleet*"}},
-		{"MultiIndexPattern", false, []string{".fleet*", "cust*"}},
+		{"MultiIndexPattern", false, []string{".fleet*", ".kibana*"}},
 	}
 	for _, tc := range testCases {
 		localTime = tc.local
@@ -132,5 +133,28 @@ func TestIndex_SetIndexAutoExpand(t *testing.T) {
 			}
 			listIndexSettingsSummary(index)
 		})
+	}
+}
+
+func TestIndex_CatIndices(t *testing.T) {
+	b, err := catIndices("", "", "", []string{"*"})
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(b))
+}
+
+func TestIndex_DeleteIndex(t *testing.T) {
+	idxPrefix := "test-del-idx"
+	for i := 1; i <= 3; i++ {
+		console("put", fmt.Sprintf("%s-000%d", idxPrefix, i), nil)
+	}
+	b, err := catIndices("", "", "", []string{idxPrefix + "*"})
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(b))
+	if err := deleteIndex([]string{idxPrefix + "*"}); err != nil {
+		t.Error(err)
 	}
 }
