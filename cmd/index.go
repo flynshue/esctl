@@ -9,183 +9,39 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
-
-	"github.com/spf13/cobra"
 )
 
-var (
-	legacy    bool
-	localTime bool
-)
-
-// indexCmd represents the index command
-var getIndexCmd = &cobra.Command{
-	Use:     "index [command]",
-	Aliases: []string{"idx"},
-	Short:   "get detailed information about one or more index",
+func catIndices(columns, sort, format string, idxPattern []string) ([]byte, error) {
+	if columns == "" {
+		columns = "health,status,index,uuid,pri,rep,docs.count,docs.deleted,store.size,pri.store.size"
+	}
+	resp, err := client.Cat.Indices(client.Cat.Indices.WithH(columns),
+		client.Cat.Indices.WithS(sort),
+		client.Cat.Indices.WithV(true),
+		client.Cat.Indices.WithFormat(format),
+		client.Cat.Indices.WithPretty(),
+		client.Cat.Indices.WithIndex(idxPattern...),
+		client.Cat.Indices.WithHuman(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
-// indexCmd represents the index command
-var listIndexCmd = &cobra.Command{
-	Use:     "index [command]",
-	Aliases: []string{"idx"},
-	Short:   "show information about one or more index",
-}
-
-var setIndexCmd = &cobra.Command{
-	Use:     "index [command]",
-	Aliases: []string{"idx"},
-	Short:   "set configuration on index",
-}
-
-// idxSizesCmd represents the idxSizes command
-var idxSizesCmd = &cobra.Command{
-	Use:     "sizes",
-	Aliases: []string{"size"},
-	Short:   "show index sizes sorted (big -> small)",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return showIdxSizes()
-	},
-}
-
-// idxVersionCmd represents the idxVersion command
-var idxVersionCmd = &cobra.Command{
-	Use:     "versions [index pattern]",
-	Aliases: []string{"version"},
-	Short:   "show index creation version",
-	Example: `# list all indexes and their versions
-esctl list index versions
-
-# list all indexes and their versions for pattern
-esctl list index versions watch*
-`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pattern := "*"
-		if len(args) != 0 {
-			pattern = args[0]
-		}
-		return listIndexVersion(pattern)
-	},
-}
-
-var listIndexTemplatesCmd = &cobra.Command{
-	Use:     "template [template name pattern]",
-	Aliases: []string{"templates"},
-	Short:   "get one or more index templates",
-	Example: `# List all index templates and their index patterns
-esctl list index template
-
-# Get list index templates that match template pattern
-esctl list index template .monit*
-`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pattern := "*"
-		if len(args) != 0 {
-			pattern = args[0]
-		}
-		if legacy {
-			return listIndexTemplatesLegacy("*")
-		}
-		return listIndexTemplates(pattern)
-	},
-}
-
-var getIndexTemplateCmd = &cobra.Command{
-	Use:     "template [name]",
-	Aliases: []string{"templates"},
-	Short:   "get details for index template",
-	Example: `# Get details on for index template
-esctl get index template .monitoring-beats
-	`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply a template pattern")
-		}
-		return getIndexTemplate(args[0])
-	},
-}
-
-var listIndexDateCmd = &cobra.Command{
-	Use:   "date [idx Pattern]",
-	Short: "list all indexes with their creation date",
-	Example: `# List indexes and their creation date that match index pattern .fleet*
-esctl list index date .fleet*
-	`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return listIndexDate([]string{"*"})
-		}
-		return listIndexDate(args)
-	},
-}
-
-var listIndexSettingsCmd = &cobra.Command{
-	Use:     "settings [index pattern]",
-	Aliases: []string{"config", "cfg"},
-	Short:   "list indexes with a summary of settings. Includes replicas, shards, ilm policy, ilm rollover alias, and auto expand replicas",
-	Example: `# List all indexes with summary of settings
-esctl list index settings
-
-# List indexes matching pattern with summary of settings
-esctl list index settings .fleet-*
-`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return listIndexSettingsSummary("*")
-		}
-		return listIndexSettingsSummary(args[0])
-	},
-}
-
-var getIndexSettingsCmd = &cobra.Command{
-	Use:     "settings [index pattern]",
-	Aliases: []string{"config", "cfg"},
-	Short:   "get full details of settings for index/index pattern",
-	Example: `# Get index settings details for specific index
-esctl get index settings .fleet-file-data-agent-000001
-
-# Get index settings details for index pattern
-esctl get index settings .fleet-*
-`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply index or index pattern")
-		}
-		b, err := getIndexSettings(args[0])
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(b))
-		return nil
-	},
-}
-
-var setIndexReplicasCmd = &cobra.Command{
-	Use:     "replicas [index] [number of replicas]",
-	Aliases: []string{"replica", "rep"},
-	Short:   "set the number of replicas for an index",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply index and number of replicas")
-		}
-		idx := args[0]
-		rep, err := strconv.Atoi(args[1])
-		if err != nil {
-			return err
-		}
-		return setIndexReplicas(idx, rep)
-	},
-}
-
-func setIndexReplicas(index string, rep int) error {
-	body := `{
-		"index": {
-		  "number_of_replicas": %d
-
-		 }
-	   }`
-	b, err := setIndexSettings(index, fmt.Sprintf(body, rep))
+func deleteIndex(indexPattern []string) error {
+	resp, err := client.Indices.Delete(indexPattern, client.Indices.Delete.WithHuman(),
+		client.Indices.Delete.WithPretty(),
+		client.Indices.Delete.WithExpandWildcards("open"),
+		client.Indices.Delete.WithAllowNoIndices(true),
+		client.Indices.Delete.WithIgnoreUnavailable(true),
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -193,10 +49,40 @@ func setIndexReplicas(index string, rep int) error {
 	return nil
 }
 
-func showIdxSizes() error {
-	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
-	sort := "store.size:desc"
-	b, err := catIndices(columns, sort, "", []string{"*"})
+func getIndexSettings(idxPattern string) ([]byte, error) {
+	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithIndex(idxPattern),
+		client.Indices.GetSettings.WithExpandWildcards("all"),
+		client.Indices.GetSettings.WithHuman(),
+		client.Indices.GetSettings.WithPretty(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
+}
+
+func getIndexTemplate(name string) error {
+	resp, err := client.Indices.GetIndexTemplate(client.Indices.GetIndexTemplate.WithHuman(),
+		client.Indices.GetIndexTemplate.WithPretty(),
+		client.Indices.GetIndexTemplate.WithName(name),
+	)
+	if err != nil {
+		return err
+	}
+	// legacy templates
+	if resp.StatusCode == 404 {
+		fmt.Fprintf(os.Stderr, "Warning: %s is a legacy index template. Legacy index templates have been deprecated starting in 7.8\n", name)
+		resp, err = client.Indices.GetTemplate(client.Indices.GetTemplate.WithHuman(),
+			client.Indices.GetTemplate.WithPretty(),
+			client.Indices.GetTemplate.WithName(name),
+		)
+		if err != nil {
+			return err
+		}
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -221,52 +107,6 @@ func listIndexDate(idxPattern []string) error {
 	for _, idx := range indices {
 		date := parseCreateDate(idx.Date, localTime)
 		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t\n", idx.Index, idx.PrimaryShards, idx.ReplicaShards, idx.Docs, idx.DeletedDocs, idx.StoreSize, date)
-	}
-	w.Flush()
-	return nil
-}
-
-func catIndices(columns, sort, format string, idxPattern []string) ([]byte, error) {
-	resp, err := client.Cat.Indices(client.Cat.Indices.WithH(columns),
-		client.Cat.Indices.WithS(sort),
-		client.Cat.Indices.WithBytes("gb"),
-		client.Cat.Indices.WithV(true),
-		client.Cat.Indices.WithFormat(format),
-		client.Cat.Indices.WithPretty(),
-		client.Cat.Indices.WithIndex(idxPattern...),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	return io.ReadAll(resp.Body)
-}
-
-func listIndexVersion(pattern string) error {
-	resp, err := client.Indices.Get([]string{pattern}, client.Indices.Get.WithHuman(),
-		client.Indices.Get.WithHuman(),
-		client.Indices.Get.WithExpandWildcards("all"),
-		client.Indices.Get.WithFilterPath("*.settings.index.version.created_string"),
-	)
-	if err != nil {
-		return err
-	}
-	if resp.IsError() {
-		return fmt.Errorf("%s", resp.Status())
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	idxs := map[string]listIndexSettingsResp{}
-	if err := json.Unmarshal(b, &idxs); err != nil {
-		return err
-	}
-	w := newTabWriter()
-	fmt.Fprintln(w, "index\t version\t")
-	for k, idx := range idxs {
-		fmt.Fprintf(w, "%s\t %s\t\n", k, idx.IndexVersion.Created)
 	}
 	w.Flush()
 	return nil
@@ -315,34 +155,6 @@ func listIndexTemplatesLegacy(pattern string) error {
 	return nil
 }
 
-func getIndexTemplate(name string) error {
-	resp, err := client.Indices.GetIndexTemplate(client.Indices.GetIndexTemplate.WithHuman(),
-		client.Indices.GetIndexTemplate.WithPretty(),
-		client.Indices.GetIndexTemplate.WithName(name),
-	)
-	if err != nil {
-		return err
-	}
-	// legacy templates
-	if resp.StatusCode == 404 {
-		fmt.Fprintf(os.Stderr, "Warning: %s is a legacy index template. Legacy index templates have been deprecated starting in 7.8\n", name)
-		resp, err = client.Indices.GetTemplate(client.Indices.GetTemplate.WithHuman(),
-			client.Indices.GetTemplate.WithPretty(),
-			client.Indices.GetTemplate.WithName(name),
-		)
-		if err != nil {
-			return err
-		}
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(b))
-	return nil
-}
-
 func listIndexSettingsSummary(idxPattern string) error {
 	b, err := getIndexSettings(idxPattern)
 	if err != nil {
@@ -361,17 +173,74 @@ func listIndexSettingsSummary(idxPattern string) error {
 	return nil
 }
 
-func getIndexSettings(idxPattern string) ([]byte, error) {
-	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithIndex(idxPattern),
-		client.Indices.GetSettings.WithExpandWildcards("all"),
-		client.Indices.GetSettings.WithHuman(),
-		client.Indices.GetSettings.WithPretty(),
+func listIndexVersion(pattern string) error {
+	resp, err := client.Indices.Get([]string{pattern}, client.Indices.Get.WithHuman(),
+		client.Indices.Get.WithHuman(),
+		client.Indices.Get.WithExpandWildcards("all"),
+		client.Indices.Get.WithFilterPath("*.settings.index.version.created_string"),
 	)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	if resp.IsError() {
+		return fmt.Errorf("%s", resp.Status())
 	}
 	defer resp.Body.Close()
-	return io.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	idxs := map[string]listIndexSettingsResp{}
+	if err := json.Unmarshal(b, &idxs); err != nil {
+		return err
+	}
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t version\t")
+	for k, idx := range idxs {
+		fmt.Fprintf(w, "%s\t %s\t\n", k, idx.IndexVersion.Created)
+	}
+	w.Flush()
+	return nil
+}
+
+func showIdxSizes() error {
+	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
+	sort := "store.size:desc"
+	b, err := catIndices(columns, sort, "", []string{"*"})
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func setIndexAutoExpand(index, autoExpand string) error {
+	body := `{
+		"index": {
+			"auto_expand_replicas": "%s"
+		}
+	}`
+	b, err := setIndexSettings(index, fmt.Sprintf(body, autoExpand))
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func setIndexReplicas(index string, rep int) error {
+	body := `{
+		"index": {
+		  "number_of_replicas": %d
+
+		 }
+	   }`
+	b, err := setIndexSettings(index, fmt.Sprintf(body, rep))
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
 }
 
 func setIndexSettings(index, body string) ([]byte, error) {
@@ -382,25 +251,4 @@ func setIndexSettings(index, body string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
-}
-
-func init() {
-	getCmd.AddCommand(getIndexCmd)
-	setCmd.AddCommand(setIndexCmd)
-	setIndexCmd.AddCommand(setIndexReplicasCmd)
-	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
-	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
-	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
-	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// indexCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// indexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
