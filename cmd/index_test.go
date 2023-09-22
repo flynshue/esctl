@@ -108,3 +108,29 @@ func TestIndex_SetIndexReplicas(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestIndex_SetIndexAutoExpand(t *testing.T) {
+	index := "test-auto-expand-0001"
+	if err := console("put", index, nil); err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		console("delete", index, nil)
+	}()
+	testCases := []struct {
+		name       string
+		autoExpand string
+	}{
+		{"invalidOption", "foobar"},
+		{"validOption", "0-1"},
+		{"disableAutoExpand", "false"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := setIndexAutoExpand(index, tc.autoExpand); err != nil {
+				t.Error(err)
+			}
+			listIndexSettingsSummary(index)
+		})
+	}
+}
