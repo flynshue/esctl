@@ -34,8 +34,7 @@ esctl delete index test-logs-*
 			return fmt.Errorf("must supply index or index pattern")
 		}
 		if force {
-			fmt.Println("force")
-			return nil
+			return deleteIndex(args)
 		}
 		b, err := catIndices("", "", "", args)
 		if err != nil {
@@ -48,8 +47,7 @@ esctl delete index test-logs-*
 			text := scan.Text()
 			switch text {
 			case "y":
-				fmt.Println("run delete stuff here")
-				return nil
+				return deleteIndex(args)
 			case "n":
 				fmt.Println("cancel delete")
 				return nil
