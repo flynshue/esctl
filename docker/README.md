@@ -1,4 +1,4 @@
-# Multinode elastic cluster with kibana in docker
+# Multinode elastic cluster with kibana in docker<!-- omit in toc -->
 
 The vm.max_map_count kernel setting must be set in order for the elastic nodes in docker containers to start up.
 
@@ -23,8 +23,16 @@ sudo su
 echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 ```
 
-# Docker compose operations
-To start up the cluster
+- [Docker compose operations](#docker-compose-operations)
+  - [To start up the cluster](#to-start-up-the-cluster)
+  - [To view logs from a container/service in docker compose](#to-view-logs-from-a-containerservice-in-docker-compose)
+  - [To tear down docker compose project](#to-tear-down-docker-compose-project)
+  - [To just stop the docker compose project so that you can resume later](#to-just-stop-the-docker-compose-project-so-that-you-can-resume-later)
+  - [To resume previously stopped docker compose project](#to-resume-previously-stopped-docker-compose-project)
+
+## Docker compose operations
+
+### To start up the cluster
 ```bash
 flynshue@flynshue-Latitude-7430:~/github.com/flynshue/esctl/docker$ docker compose up -d
 [+] Running 11/11
@@ -41,7 +49,8 @@ flynshue@flynshue-Latitude-7430:~/github.com/flynshue/esctl/docker$ docker compo
  ✔ Container docker-kibana-1      Started 
 ```
 
-To view logs from a container/service in docker compose
+### To view logs from a container/service in docker compose
+
 **Note: You need to target the service name that is listed in the docker compose file and not the actual container name**
 ```bash
 $ docker compose logs kibana
@@ -67,7 +76,7 @@ NAME                STATUS                  CONFIG FILES
 docker              exited(1), running(4)   /home/flynshue/github.com/flynshue/esctl/docker/compose.yaml
 ```
 
-To tear down docker compose project
+### To tear down docker compose project
 **Note: This will stop and remove the containers and volumes associated with the compose project**
 ```bash
 $ docker compose down -v
@@ -80,7 +89,12 @@ $ docker compose down -v
  ✔ Network docker_default     Removed
 ```
 
-To just stop the docker compose project so that you can resume later
+### To just stop the docker compose project so that you can resume later
 ```bash
 docker compose stop
+```
+
+### To resume previously stopped docker compose project
+```bash
+docker compose start
 ```
