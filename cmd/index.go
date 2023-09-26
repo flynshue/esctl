@@ -22,6 +22,7 @@ func catIndices(columns, sort, format string, idxPattern []string) ([]byte, erro
 		client.Cat.Indices.WithPretty(),
 		client.Cat.Indices.WithIndex(idxPattern...),
 		client.Cat.Indices.WithHuman(),
+		client.Cat.Indices.WithExpandWildcards("all"),
 	)
 	if err != nil {
 		return nil, err
@@ -30,8 +31,8 @@ func catIndices(columns, sort, format string, idxPattern []string) ([]byte, erro
 	return io.ReadAll(resp.Body)
 }
 
-func deleteIndex(indexPattern []string) error {
-	resp, err := client.Indices.Delete(indexPattern, client.Indices.Delete.WithHuman(),
+func deleteIndex(idxPattern []string) error {
+	resp, err := client.Indices.Delete(idxPattern, client.Indices.Delete.WithHuman(),
 		client.Indices.Delete.WithPretty(),
 		client.Indices.Delete.WithExpandWildcards("open"),
 		client.Indices.Delete.WithAllowNoIndices(true),
@@ -91,7 +92,7 @@ func getIndexTemplate(name string) error {
 }
 
 func listIndexDate(idxPattern []string) error {
-	columns := "index,pri,rep,docs.count,docs.deleted,store.size,creation.date"
+	columns := "index,pri,rep,docs.count,store.size,pri.store.size,creation.date"
 	sort := "creation.date"
 	b, err := catIndices(columns, sort, "json", idxPattern)
 	if err != nil {
@@ -103,10 +104,10 @@ func listIndexDate(idxPattern []string) error {
 		return err
 	}
 	w := newTabWriter()
-	fmt.Fprintln(w, "index\t primary_shards\t replica_shards\t docs\t deleted_docs\t store_size\t creation_date\t")
+	fmt.Fprintln(w, "index\t pri\t rep\t docs.count\t pri.store.size\t store.size\t creation.date\t")
 	for _, idx := range indices {
 		date := parseCreateDate(idx.Date, localTime)
-		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t\n", idx.Index, idx.PrimaryShards, idx.ReplicaShards, idx.Docs, idx.DeletedDocs, idx.StoreSize, date)
+		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t\n", idx.Index, idx.PrimaryShards, idx.ReplicaShards, idx.Docs, idx.PriStoreSize, idx.StoreSize, date)
 	}
 	w.Flush()
 	return nil
@@ -203,10 +204,10 @@ func listIndexVersion(pattern string) error {
 	return nil
 }
 
-func showIdxSizes() error {
-	columns := "index,pri,rep,docs.count,store.size,pri.store.size"
+func showIdxSizes(idxPattern []string) error {
+	columns := "index,pri,rep,docs.count,pri.store.size,store.size"
 	sort := "store.size:desc"
-	b, err := catIndices(columns, sort, "", []string{"*"})
+	b, err := catIndices(columns, sort, "", idxPattern)
 	if err != nil {
 		return err
 	}

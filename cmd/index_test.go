@@ -11,7 +11,7 @@ func TestIndex_ListIndexVersion(t *testing.T) {
 		pattern string
 	}{
 		{"all", "*"},
-		{"kibana", ".kibana*"},
+		{"indexPattern", ".kibana*"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -23,8 +23,19 @@ func TestIndex_ListIndexVersion(t *testing.T) {
 }
 
 func TestIndex_ShowIdxSizes(t *testing.T) {
-	if err := showIdxSizes(); err != nil {
-		t.Error(err)
+	testCases := []struct {
+		name       string
+		idxPattern []string
+	}{
+		{"allIndexes", []string{"*"}},
+		{"indexPattern", []string{".kibana*"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := showIdxSizes(tc.idxPattern); err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
 
@@ -34,7 +45,7 @@ func TestIndex_ListIndexTemplates(t *testing.T) {
 		pattern string
 	}{
 		{"all", "*"},
-		{"monitoring", ".monitoring-*"},
+		{"indexPattern", ".monitoring-*"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

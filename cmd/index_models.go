@@ -40,5 +40,6 @@ type CatIndexResp struct {
 	Docs          string `json:"docs.count"`
 	DeletedDocs   string `json:"docs.deleted"`
 	Date          string `json:"creation.date"`
+	PriStoreSize  string `json:"pri.store.size"`
 	StoreSize     string `json:"store.size"`
 }

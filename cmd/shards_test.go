@@ -4,16 +4,18 @@ import "testing"
 
 func TestShards_ListShards(t *testing.T) {
 	testCases := []struct {
-		name string
-		sort string
+		name       string
+		sort       string
+		idxPattern []string
 	}{
-		{"ascending", "asc"},
-		{"descending", "desc"},
+		{"ascending", "asc", []string{"*"}},
+		{"descending", "desc", []string{"*"}},
+		{"idxPattern", "desc", []string{".kibana*"}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			shardSort = tc.sort
-			if err := listShards(); err != nil {
+			if err := listShards(tc.idxPattern); err != nil {
 				t.Error(err)
 			}
 		})
@@ -21,17 +23,29 @@ func TestShards_ListShards(t *testing.T) {
 }
 
 func TestShards_ListShardsNodeBigger(t *testing.T) {
-	if err := listShardsNodeBigger("es-data-03", "1kb"); err != nil {
+	if err := listShardsNodeBigger("es-data-03", "1kb", []string{"*"}); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestShards_ListShardsForNode(t *testing.T) {
-	shards, err := listShardsForNode("es-data-03")
-	if err != nil {
-		t.Error(err)
+	testCases := []struct {
+		name       string
+		node       string
+		idxPattern []string
+	}{
+		{"allShardsForNode", "es-data-03", []string{"*"}},
+		{"indexPatternForNode", "es-data-03", []string{".kibana*"}},
 	}
-	printShards(shards)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			shards, err := listShardsForNode(tc.node, tc.idxPattern)
+			if err != nil {
+				t.Error(err)
+			}
+			printShards(shards)
+		})
+	}
 }
 
 func TestShards_DisableShardAllocations(t *testing.T) {
