@@ -105,17 +105,21 @@ esctl get index template .monitoring-beats
 }
 
 // idxSizesCmd represents the idxSizes command
-var idxSizesCmd = &cobra.Command{
-	Use:     "sizes",
+var listIdxSizesCmd = &cobra.Command{
+	Use:     "sizes [index pattern]",
 	Aliases: []string{"size"},
 	Short:   "show index sizes sorted (big -> small)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return showIdxSizes()
+		idxPattern := []string{"*"}
+		if len(args) != 0 {
+			idxPattern = args
+		}
+		return showIdxSizes(idxPattern)
 	},
 }
 
 // idxVersionCmd represents the idxVersion command
-var idxVersionCmd = &cobra.Command{
+var listIdxVersionCmd = &cobra.Command{
 	Use:     "versions [index pattern]",
 	Aliases: []string{"version"},
 	Short:   "show index creation version",
@@ -142,7 +146,7 @@ var listIndexCmd = &cobra.Command{
 }
 
 var listIndexDateCmd = &cobra.Command{
-	Use:   "date [idx Pattern]",
+	Use:   "date [index Pattern]",
 	Short: "list all indexes with their creation date",
 	Example: `# List indexes and their creation date that match index pattern .fleet*
 esctl list index date .fleet*
@@ -244,7 +248,7 @@ func init() {
 	getCmd.AddCommand(getIndexCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(idxSizesCmd, idxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
+	listIndexCmd.AddCommand(listIdxSizesCmd, listIdxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 	setCmd.AddCommand(setIndexCmd)

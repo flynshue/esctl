@@ -3,7 +3,7 @@
 show index sizes sorted (big -> small)
 
 ```
-esctl list index sizes [flags]
+esctl list index sizes [index pattern] [flags]
 ```
 
 ### Aliases

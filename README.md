@@ -22,6 +22,7 @@ This tool aims to be the GO replacement of https://github.com/slmingol/escli.
   - [List all shards in cluster and their node](#list-all-shards-in-cluster-and-their-node)
   - [List all shards on specific node](#list-all-shards-on-specific-node)
   - [Watch active shard recovery](#watch-active-shard-recovery)
+- [Development and Testing](#development-and-testing)
 
 ## Configuration
 By default, the tool will use `$USER` as the elasticsearch username.  To override that:
@@ -412,4 +413,93 @@ index                                                    shard time  type stage 
 
 
 Hit enter to stop
+```
+
+## Development and Testing
+In order to run the `go test`, you'll need to have the local docker compose elastic cluster running.  Please see [Multinode elastic cluster with kibana in docker](./docker/README.md#multinode-elastic-cluster-with-kibana-in-docker) for more details for creating the cluster.
+
+The tests expect that you have `~/.esctl-dev.yaml` configured on your local machine.
+
+Here's what it should look like
+```yaml
+hosts:
+  - https://localhost:9200
+username: elastic
+password: elastic
+insecure: true
+```
+
+The go tests should be run from the root of the esctl directory
+
+Here's an example of how to run all tests (truncated output because it's really long)
+```
+$ pwd
+/home/flynshue/github.com/flynshue/esctl
+
+$ go test -v ./... -count=1
+?       github.com/flynshue/esctl       [no test files]
+?       github.com/flynshue/esctl/pkg/doc       [no test files]
+=== RUN   TestInitEsClient
+--- PASS: TestInitEsClient (0.01s)
+=== RUN   TestCluster_GetClusterSettings
+=== RUN   TestCluster_GetClusterSettings/allSettings
+    cluster_test.go:21: {
+          "persistent" : { },
+          "transient" : {
+            "cluster" : {
+              "routing" : {
+                "allocation" : {
+                  "enable" : "all"
+                }
+              }
+            }
+          },
+          "defaults" : {
+            "cluster" : {
+              "max_voting_config_exclusions" : "10",
+              "auto_shrink_voting_configuration" : "true",
+              "discovery_configuration_check" : {
+                "interval" : "30000ms"
+              },
+```
+
+If you want to run tests that are only in `index_test.go`
+```
+$ go test -v ./... -count=1 -run=TestIndex
+?       github.com/flynshue/esctl       [no test files]
+?       github.com/flynshue/esctl/pkg/doc       [no test files]
+=== RUN   TestIndex_ListIndexVersion
+=== RUN   TestIndex_ListIndexVersion/all
+index                                                           version  
+.internal.alerts-security.alerts-default-000001                 8090199  
+.kibana_alerting_cases_8.9.1_001                                8090199  
+.kibana_analytics_8.9.1_001                                     8090199  
+.apm-source-map                                                 8090199  
+.ds-.logs-deprecation.elasticsearch-default-2023.09.22-000001   8090199  
+.internal.alerts-observability.slo.alerts-default-000001        8090199  
+.internal.alerts-observability.uptime.alerts-default-000001     8090199  
+.kibana_security_session_1                                      8090199  
+```
+
+**Note:** With `go test`, you can typically just target the filename for run tests in that file. However, to avoid initiating a new client for every test file I just initiate it once in `client_test.go`, which is why you'll have to use the `-run` flag with test pattern
+
+If you want to run just one specific test
+```
+$ go test -v ./... -count=1 -run=TestShards_ListShards
+?       github.com/flynshue/esctl       [no test files]
+?       github.com/flynshue/esctl/pkg/doc       [no test files]
+=== RUN   TestShards_ListShards
+=== RUN   TestShards_ListShards/ascending
+index                                                         shard prirep state   docs   store ip         node
+.apm-agent-configuration                                      0     r      STARTED    0    247b 172.18.0.5 es-data-03
+.apm-agent-configuration                                      0     p      STARTED    0    247b 172.18.0.2 es-data-01
+.apm-custom-link                                              0     p      STARTED    0    247b 172.18.0.5 es-data-03
+.apm-custom-link                                              0     r      STARTED    0    247b 172.18.0.4 es-data-02
+.apm-source-map                                               0     p      STARTED    0    247b 172.18.0.5 es-data-03
+.apm-source-map                                               0     r      STARTED    0    247b 172.18.0.2 es-data-01
+.apm-source-map                                               0     r      STARTED    0    247b 172.18.0.4 es-data-02
+.fleet-file-data-agent-000001                                 0     r      STARTED    0    247b 172.18.0.5 es-data-03
+.fleet-file-data-agent-000001                                 0     p      STARTED    0    247b 172.18.0.2 es-data-01
+.fleet-files-agent-000001                                     0     r      STARTED    0    247b 172.18.0.2 es-data-01
+.fleet-files-agent-000001                                     0     p      STARTED    0    247b 172.18.0.4 es-data-02
 ```

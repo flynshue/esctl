@@ -28,7 +28,7 @@ var (
 )
 
 var listShardsCmd = &cobra.Command{
-	Use:     "shards [command]",
+	Use:     "shards [index pattern]",
 	Aliases: []string{"shard"},
 	Short:   "show information about one or more shard",
 	Example: `# List all shards for every node
@@ -38,8 +38,12 @@ esctl list shards
 esctl list shards --node es-data-03
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		idxPattern := []string{"*"}
+		if len(args) != 0 {
+			idxPattern = args
+		}
 		if nodeName == "" {
-			return listShards()
+			return listShards(idxPattern)
 		}
 		// switch {
 		// case bigger != "":
@@ -51,7 +55,7 @@ esctl list shards --node es-data-03
 		// 	}
 		// 	printShards(shards)
 		// }
-		shards, err := listShardsForNode(nodeName)
+		shards, err := listShardsForNode(nodeName, idxPattern)
 		if err != nil {
 			return err
 		}
@@ -167,17 +171,8 @@ func enableShardAllocations() error {
 	return nil
 }
 
-func listShards() error {
-	resp, err := client.Cat.Shards(client.Cat.Shards.WithHuman(),
-		client.Cat.Shards.WithPretty(),
-		client.Cat.Shards.WithS(fmt.Sprintf("store:%s,index,shard", shardSort)),
-		client.Cat.Shards.WithV(true),
-	)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+func listShards(idxPattern []string) error {
+	b, err := catShards("", idxPattern)
 	if err != nil {
 		return err
 	}
@@ -185,8 +180,8 @@ func listShards() error {
 	return nil
 }
 
-func listShardsNodeBigger(node, size string) error {
-	resp, err := listShardsForNode(node)
+func listShardsNodeBigger(node, size string, idxPattern []string) error {
+	resp, err := listShardsForNode(node, idxPattern)
 	if err != nil {
 		return err
 	}
@@ -202,12 +197,13 @@ func listShardsNodeBigger(node, size string) error {
 	return nil
 }
 
-func catShards(format string) ([]byte, error) {
+func catShards(format string, idxPattern []string) ([]byte, error) {
 	resp, err := client.Cat.Shards(client.Cat.Shards.WithHuman(),
 		client.Cat.Shards.WithPretty(),
 		client.Cat.Shards.WithS(fmt.Sprintf("store:%s,index,shard", shardSort)),
 		client.Cat.Shards.WithV(true),
 		client.Cat.Shards.WithFormat(format),
+		client.Cat.Shards.WithIndex(idxPattern...),
 	)
 	if err != nil {
 		return nil, err
@@ -216,8 +212,8 @@ func catShards(format string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func listShardsForNode(node string) ([]catShardsJsonResp, error) {
-	b, err := catShards("json")
+func listShardsForNode(node string, idxPattern []string) ([]catShardsJsonResp, error) {
+	b, err := catShards("json", idxPattern)
 	if err != nil {
 		return nil, err
 	}

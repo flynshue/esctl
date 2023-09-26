@@ -3,7 +3,7 @@
 list all indexes with their creation date
 
 ```
-esctl list index date [idx Pattern] [flags]
+esctl list index date [index Pattern] [flags]
 ```
 
 ### Examples
