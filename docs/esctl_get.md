@@ -21,4 +21,6 @@ get details for a resource
 * [esctl get index](esctl_get_index.md)	 - get detailed information about one or more index
 * [esctl get rebalance-throttle](esctl_get_rebalance-throttle.md)	 - show routing allocations for rebalancing and recoveries
 * [esctl get shards](esctl_get_shards.md)	 - show information about one or more shard
+* [esctl get slm](esctl_get_slm.md)	 - get detailed info about napshot lifecycle management policy (slm)
+* [esctl get snapshots](esctl_get_snapshots.md)	 - get detailed information about a snapshot
 

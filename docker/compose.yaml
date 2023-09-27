@@ -5,6 +5,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
+      - snap01:/mnt/snapshot
     user: "0"
     command: >
       bash -c '
@@ -48,6 +49,7 @@ services:
         fi;
         echo "Setting file permissions"
         chown -R root:root config/certs;
+        chown -R elasticsearch:elasticsearch /mnt/snapshot
         find . -type d -exec chmod 750 \{\} \;;
         find . -type f -exec chmod 640 \{\} \;;
         echo "Waiting for Elasticsearch availability";
@@ -70,6 +72,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata01:/usr/share/elasticsearch/data
+      - snap01:/mnt/snapshot
     ports:
       - ${ES_PORT}:9200
     environment:
@@ -91,6 +94,7 @@ services:
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
       - action.destructive_requires_name=false
+      - path.repo=/mnt/snapshot
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
@@ -113,6 +117,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata02:/usr/share/elasticsearch/data
+      - snap01:/mnt/snapshot
     environment:
       - node.name=es-data-02
       - cluster.name=${CLUSTER_NAME}
@@ -131,6 +136,7 @@ services:
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
       - action.destructive_requires_name=false
+      - path.repo=/mnt/snapshot
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
@@ -153,6 +159,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata03:/usr/share/elasticsearch/data
+      - snap01:/mnt/snapshot
     environment:
       - node.name=es-data-03
       - cluster.name=${CLUSTER_NAME}
@@ -171,6 +178,7 @@ services:
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
       - action.destructive_requires_name=false
+      - path.repo=/mnt/snapshot
     mem_limit: ${MEM_LIMIT}
     ulimits:
       memlock:
@@ -227,4 +235,6 @@ volumes:
   esdata03:
     driver: local
   kibanadata:
+    driver: local
+  snap01:
     driver: local
