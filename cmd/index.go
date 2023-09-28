@@ -106,7 +106,7 @@ func listIndexDate(idxPattern []string) error {
 	w := newTabWriter()
 	fmt.Fprintln(w, "index\t pri\t rep\t docs.count\t pri.store.size\t store.size\t creation.date\t")
 	for _, idx := range indices {
-		date := parseCreateDate(idx.Date, localTime)
+		date := parseUnixMilliDate(idx.Date, localTime)
 		fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\t %s\t %s\t\n", idx.Index, idx.PrimaryShards, idx.ReplicaShards, idx.Docs, idx.PriStoreSize, idx.StoreSize, date)
 	}
 	w.Flush()

@@ -23,6 +23,8 @@ sudo su
 echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 ```
 
+For more information on running elasticsearch in docker compose, please see [Start a multi-node cluster with Docker Compose](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file)
+
 - [Docker compose operations](#docker-compose-operations)
   - [To start up the cluster](#to-start-up-the-cluster)
   - [To view logs from a container/service in docker compose](#to-view-logs-from-a-containerservice-in-docker-compose)

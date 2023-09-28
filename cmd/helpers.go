@@ -13,9 +13,18 @@ func newTabWriter() *tabwriter.Writer {
 	return tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent)
 }
 
-func parseCreateDate(ms string, localTime bool) string {
+func parseUnixMilliDate(ms string, localTime bool) string {
 	ts, _ := strconv.ParseInt(ms, 10, 64)
 	t := time.UnixMilli(ts)
+	if !localTime {
+		t = t.UTC()
+	}
+	return t.Format(creationDateLayout)
+}
+
+func parseUnixSecDate(sec string, localTime bool) string {
+	ts, _ := strconv.ParseInt(sec, 10, 64)
+	t := time.Unix(ts, 0)
 	if !localTime {
 		t = t.UTC()
 	}
