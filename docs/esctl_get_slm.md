@@ -1,6 +1,6 @@
 ## esctl get slm
 
-get detailed info about napshot lifecycle management policy (slm)
+get detailed info about snapshot lifecycle management policy (slm)
 
 ```
 esctl get slm [policy] [flags]

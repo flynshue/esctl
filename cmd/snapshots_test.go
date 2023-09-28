@@ -10,16 +10,16 @@ import (
 )
 
 var (
-	repo         = "test-elastic-fs"
-	repoSettings = `{
+	testRepo         = "test-elastic-fs"
+	testRepoSettings = `{
 	"type": "fs",
 	"settings": {
 	  "location": "/mnt/snapshot"
 	}
   }`
 
-	snapshotName = "test-snapshot-01"
-	snapshotBody = `{
+	testSnapshotName = "test-snapshot-01"
+	testSnapshotBody = `{
 	  "indices": "%s",
 	  "ignore_unavailable": true,
 	  "include_global_state": false,
@@ -28,13 +28,13 @@ var (
 		"taken_because": "backup before upgrading"
 	  }
 	}`
-	idxs = []string{"test-idx-0001", "test-idx-0002"}
+	testIdxs = []string{"test-idx-0001", "test-idx-0002"}
 )
 
 func TestSnapshots_ListSnapshotRepos(t *testing.T) {
-	client.Snapshot.DeleteRepository([]string{repo})
-	buf := bytes.NewBufferString(repoSettings)
-	resp, err := client.Snapshot.CreateRepository(repo, buf)
+	client.Snapshot.DeleteRepository([]string{testRepo})
+	buf := bytes.NewBufferString(testRepoSettings)
+	resp, err := client.Snapshot.CreateRepository(testRepo, buf)
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,20 +60,20 @@ func TestSnapshots_CatSnapshots(t *testing.T) {
 
 func snapshotSetup() error {
 	// delete resources if they already exist
-	client.Snapshot.Delete(repo, []string{snapshotName})
-	client.Snapshot.DeleteRepository([]string{repo})
-	client.Indices.Delete(idxs)
+	client.Snapshot.Delete(testRepo, []string{testSnapshotName})
+	client.Snapshot.DeleteRepository([]string{testRepo})
+	client.Indices.Delete(testIdxs)
 
-	for _, i := range idxs {
+	for _, i := range testIdxs {
 		client.Indices.Create(i)
 	}
-	buf := bytes.NewBufferString(repoSettings)
-	_, err := client.Snapshot.CreateRepository(repo, buf)
+	buf := bytes.NewBufferString(testRepoSettings)
+	_, err := client.Snapshot.CreateRepository(testRepo, buf)
 	if err != nil {
 		return err
 	}
-	buf = bytes.NewBufferString(fmt.Sprintf(snapshotBody, strings.Join(idxs, ",")))
-	resp, err := client.Snapshot.Create(repo, snapshotName,
+	buf = bytes.NewBufferString(fmt.Sprintf(testSnapshotBody, strings.Join(testIdxs, ",")))
+	resp, err := client.Snapshot.Create(testRepo, testSnapshotName,
 		client.Snapshot.Create.WithBody(buf),
 	)
 	if err != nil {
@@ -89,13 +89,13 @@ func snapshotSetup() error {
 }
 
 func TestSnapshots_GetSnapshotRepos(t *testing.T) {
-	client.Snapshot.DeleteRepository([]string{repo})
-	buf := bytes.NewBufferString(repoSettings)
-	_, err := client.Snapshot.CreateRepository(repo, buf)
+	client.Snapshot.DeleteRepository([]string{testRepo})
+	buf := bytes.NewBufferString(testRepoSettings)
+	_, err := client.Snapshot.CreateRepository(testRepo, buf)
 	if err != nil {
 		t.Error(err)
 	}
-	if err := getSnapshotRepos(repo); err != nil {
+	if err := getSnapshotRepos(testRepo); err != nil {
 		t.Error(err)
 	}
 }
@@ -104,7 +104,7 @@ func TestSnapshots_GetSnapshot(t *testing.T) {
 	if err := snapshotSetup(); err != nil {
 		t.Error(err)
 	}
-	if err := getSnapshot(snapshotName); err != nil {
+	if err := getSnapshot(testSnapshotName); err != nil {
 		t.Error(err)
 	}
 }
@@ -141,7 +141,7 @@ func slmSetup() error {
 	policyNames := []string{"test-slm-policy-01", "test-slm-policy-02"}
 	for _, name := range policyNames {
 		client.SlmDeleteLifecycle(name)
-		buf := bytes.NewBufferString(fmt.Sprintf(policyCfg, name, repo, strings.Join(idxs, ",")))
+		buf := bytes.NewBufferString(fmt.Sprintf(policyCfg, name, testRepo, strings.Join(testIdxs, ",")))
 		_, err := client.SlmPutLifecycle(name,
 			client.SlmPutLifecycle.WithBody(buf),
 		)

@@ -19,6 +19,8 @@ list information for resource/s
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
 * [esctl list index](esctl_list_index.md)	 - show information about one or more index
 * [esctl list nodes](esctl_list_nodes.md)	 - show information about one or more node
+* [esctl list role-mappings](esctl_list_role-mappings.md)	 - list role mappings
+* [esctl list roles](esctl_list_roles.md)	 - list roles
 * [esctl list shards](esctl_list_shards.md)	 - show information about one or more shard
 * [esctl list slm](esctl_list_slm.md)	 - list snapshot lifecycle management policies (slm)
 * [esctl list snapshots](esctl_list_snapshots.md)	 - list summary of snapshots for stored in one or more repositories

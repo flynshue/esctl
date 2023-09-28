@@ -10,7 +10,7 @@ import (
 
 var getSlmCmd = &cobra.Command{
 	Use:   "slm [policy]",
-	Short: "get detailed info about napshot lifecycle management policy (slm)",
+	Short: "get detailed info about snapshot lifecycle management policy (slm)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("must supply a slm policy")
