@@ -18,6 +18,14 @@ var commandsCmd = &cobra.Command{
 	},
 }
 
+var createCmd = &cobra.Command{
+	Use:   "create [command]",
+	Short: "Create resources",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var deleteCmd = &cobra.Command{
 	Use:     "delete",
 	Aliases: []string{"del"},
@@ -125,5 +133,5 @@ var (
 func init() {
 	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
 		versionCmd, topCmd, commandsCmd, setCmd,
-		resetCmd, explainCmd, deleteCmd)
+		resetCmd, explainCmd, deleteCmd, createCmd)
 }
