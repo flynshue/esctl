@@ -100,3 +100,23 @@ func setupIlm() error {
 	fmt.Println(string(b))
 	return nil
 }
+
+func TestIlm_ListIlmPolicies(t *testing.T) {
+	if err := setupIlm(); err != nil {
+		t.Error(err)
+	}
+	if err := listIlmPolicies("*"); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestIlm_GetIlmPolicy(t *testing.T) {
+	if err := setupIlm(); err != nil {
+		t.Error(err)
+	}
+	b, err := getIlmPolicy(testIlmPolicyName)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(b))
+}

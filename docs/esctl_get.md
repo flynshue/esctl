@@ -18,6 +18,7 @@ get details for a resource
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
 * [esctl get health](esctl_get_health.md)	 - show cluster health
+* [esctl get ilm](esctl_get_ilm.md)	 - get ilm policy details
 * [esctl get index](esctl_get_index.md)	 - get detailed information about one or more index
 * [esctl get rebalance-throttle](esctl_get_rebalance-throttle.md)	 - show routing allocations for rebalancing and recoveries
 * [esctl get role-mappings](esctl_get_role-mappings.md)	 - get details about a role mapping
