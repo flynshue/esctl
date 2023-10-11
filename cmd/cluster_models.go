@@ -3,8 +3,12 @@ package cmd
 type clusterSettings struct {
 	Cluster `json:"cluster"`
 	Indices `json:"indices,omitempty"`
+	Action  `json:"action"`
 }
 
+type Action struct {
+	Destructive string `json:"destructive_requires_name"`
+}
 type Cluster struct {
 	Routing `json:"routing"`
 }

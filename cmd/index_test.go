@@ -156,6 +156,7 @@ func TestIndex_CatIndices(t *testing.T) {
 }
 
 func TestIndex_DeleteIndex(t *testing.T) {
+	disableDestructiveRequires()
 	idxPrefix := "test-del-idx"
 	for i := 1; i <= 3; i++ {
 		console("put", fmt.Sprintf("%s-000%d", idxPrefix, i), nil)

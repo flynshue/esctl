@@ -10,11 +10,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var disableDestructiveRequiresCmd = &cobra.Command{
+	Use:   "destructive-requires",
+	Short: "disables destructive_requires_name, wildcards are allowed for deleting indexing",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return disableDestructiveRequires()
+	},
+}
+
+var enableDestructiveRequiresCmd = &cobra.Command{
+	Use:   "destructive-requires",
+	Short: "enables destructive_requires_name, must specify index name to delete an index. Wildcards are not allowed",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return enableDestructiveRequires()
+	},
+}
+
 var getClusterCmd = &cobra.Command{
 	Use:   "cluster [command]",
 	Short: "show cluster info",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		initEsClient()
+	},
+}
+
+var getDestructiveRequiresCmd = &cobra.Command{
+	Use:   "destructive-requires",
+	Short: "destructive_requires_name setting determines if must specify the index name to delete an index or if you can use wildcards.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getDestructiveRequires()
 	},
 }
 
@@ -81,6 +105,34 @@ esctl explain alloc
 	},
 }
 
+func enableDestructiveRequires() error {
+	body := `{
+		"persistent": {
+			"action.destructive_requires_name" : "true"
+		}
+	}`
+	b, err := putClusterSettings(body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func disableDestructiveRequires() error {
+	body := `{
+		"persistent": {
+			"action.destructive_requires_name" : "false"
+		}
+	}`
+	b, err := putClusterSettings(body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func getClusterRebalance() error {
 	b, err := getClusterSettings("**.cluster.routing.allocation,**.indices.recovery.max_bytes_per_sec")
 	if err != nil {
@@ -136,6 +188,24 @@ func getClusterSettings(filterPath string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
+}
+
+func getDestructiveRequires() error {
+	b, err := getClusterSettings("**.action.destructive_requires_name")
+	if err != nil {
+		return err
+	}
+	settings := map[string]clusterSettings{}
+	if err := json.Unmarshal(b, &settings); err != nil {
+		return err
+	}
+	for k, v := range settings {
+		if v.Action.Destructive == "" {
+			continue
+		}
+		fmt.Printf("%s\naction.destructive_requires_name: %s\n", k, v.Action.Destructive)
+	}
+	return nil
 }
 
 func setRebalanceThrottle(size int) error {
@@ -196,8 +266,10 @@ func putClusterSettings(body string) ([]byte, error) {
 }
 
 func init() {
-	getCmd.AddCommand(getRebalanceCmd)
-	setCmd.AddCommand(setRebalanceThrottleCmd)
-	resetCmd.AddCommand(resetRebalanceThrottleCmd)
+	disableCmd.AddCommand(disableDestructiveRequiresCmd)
+	enableCmd.AddCommand(enableDestructiveRequiresCmd)
 	explainCmd.AddCommand(explainClusterAllocationCmd)
+	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd)
+	resetCmd.AddCommand(resetRebalanceThrottleCmd)
+	setCmd.AddCommand(setRebalanceThrottleCmd)
 }
