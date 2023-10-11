@@ -11,6 +11,7 @@ func TestCluster_GetClusterSettings(t *testing.T) {
 	}{
 		{"allSettings", ""},
 		{"shardAllocations", "**.cluster.routing.allocation.enable"},
+		{"actionSettings", "**.action.destructive_requires_name"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -29,6 +30,12 @@ func TestCluster_GetClusterRebalance(t *testing.T) {
 	}
 }
 
+func TestCluster_GetDestructiveRequires(t *testing.T) {
+	if err := getDestructiveRequires(); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestCluster_SetClusterRebalance(t *testing.T) {
 	if err := setRebalanceThrottle(300); err != nil {
 		t.Error(err)
@@ -43,6 +50,18 @@ func TestCluster_ResetRebalanceThrottle(t *testing.T) {
 
 func TestCluster_ExplainClusterAllocation(t *testing.T) {
 	if err := explainClusterAllocation(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCluster_EnableDestructiveRequires(t *testing.T) {
+	if err := enableDestructiveRequires(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCluster_DisableDestructiveRequires(t *testing.T) {
+	if err := disableDestructiveRequires(); err != nil {
 		t.Error(err)
 	}
 }

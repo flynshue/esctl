@@ -25,4 +25,5 @@ CLI tool for interacting with elasticsearch API
 * [esctl set](esctl_set.md)	 - configure settings on a resource
 * [esctl top](esctl_top.md)	 - Show elastic cluster stats
 * [esctl version](esctl_version.md)	 - print the client version information
+* [esctl whoami](esctl_whoami.md)	 - authenticate a user and retrieve information about the authenticated user
 

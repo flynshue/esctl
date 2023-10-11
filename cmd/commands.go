@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -109,6 +110,27 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+var whoamiCmd = &cobra.Command{
+	Use:   "whoami",
+	Short: "authenticate a user and retrieve information about the authenticated user",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		resp, err := client.Security.Authenticate(client.Security.Authenticate.WithPretty())
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		return nil
+	},
+}
+
 func commandTree(w *tabwriter.Writer, cmd *cobra.Command) {
 	for _, c := range cmd.Commands() {
 		if c.Name() == "help" {
@@ -133,5 +155,7 @@ var (
 func init() {
 	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
 		versionCmd, topCmd, commandsCmd, setCmd,
-		resetCmd, explainCmd, deleteCmd, createCmd)
+		resetCmd, explainCmd, deleteCmd, createCmd,
+		whoamiCmd,
+	)
 }

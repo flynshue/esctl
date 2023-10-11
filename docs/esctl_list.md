@@ -17,6 +17,7 @@ list information for resource/s
 ### SEE ALSO
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
+* [esctl list ilm](esctl_list_ilm.md)	 - list ilm policies
 * [esctl list index](esctl_list_index.md)	 - show information about one or more index
 * [esctl list nodes](esctl_list_nodes.md)	 - show information about one or more node
 * [esctl list role-mappings](esctl_list_role-mappings.md)	 - list role mappings
