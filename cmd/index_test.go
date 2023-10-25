@@ -109,11 +109,11 @@ func TestIndex_GetIndexSettings(t *testing.T) {
 
 func TestIndex_SetIndexReplicas(t *testing.T) {
 	index := "test-idx-replicas"
-	if err := console("put", index, nil); err != nil {
+	if err := escConsole("put", index, nil); err != nil {
 		t.Error(err)
 	}
 	defer func() {
-		console("delete", index, nil)
+		escConsole("delete", index, nil)
 	}()
 	setIndexReplicas(index, 3)
 	if err := listIndexSettingsSummary(index); err != nil {
@@ -123,11 +123,11 @@ func TestIndex_SetIndexReplicas(t *testing.T) {
 
 func TestIndex_SetIndexAutoExpand(t *testing.T) {
 	index := "test-auto-expand-0001"
-	if err := console("put", index, nil); err != nil {
+	if err := escConsole("put", index, nil); err != nil {
 		t.Error(err)
 	}
 	defer func() {
-		console("delete", index, nil)
+		escConsole("delete", index, nil)
 	}()
 	testCases := []struct {
 		name       string
@@ -159,7 +159,7 @@ func TestIndex_DeleteIndex(t *testing.T) {
 	disableDestructiveRequires()
 	idxPrefix := "test-del-idx"
 	for i := 1; i <= 3; i++ {
-		console("put", fmt.Sprintf("%s-000%d", idxPrefix, i), nil)
+		escConsole("put", fmt.Sprintf("%s-000%d", idxPrefix, i), nil)
 	}
 	b, err := catIndices("", "", "", []string{idxPrefix + "*"})
 	if err != nil {

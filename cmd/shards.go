@@ -125,6 +125,14 @@ var enableShardAllocationsCmd = &cobra.Command{
 	},
 }
 
+var retryShardsCmd = &cobra.Command{
+	Use:   "shards",
+	Short: "Retry unassigned shards",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return retryShards()
+	},
+}
+
 func getShardAllocations() error {
 	b, err := getClusterSettings("**.cluster.routing.allocation.enable")
 	if err != nil {
@@ -260,6 +268,23 @@ func listShardCount() error {
 	return nil
 }
 
+func retryShards() error {
+	resp, err := client.Cluster.Reroute(client.Cluster.Reroute.WithPretty(),
+		client.Cluster.Reroute.WithExplain(true),
+		client.Cluster.Reroute.WithRetryFailed(true),
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func init() {
 	getCmd.AddCommand(getShardsCmd)
 	getShardsCmd.AddCommand(getShardAllocationsCmd)
@@ -272,4 +297,5 @@ func init() {
 	disableShardCmd.AddCommand(disableShardAllocationsCmd)
 	enableCmd.AddCommand(enableShardCmd)
 	enableShardCmd.AddCommand(enableShardAllocationsCmd)
+	retryCmd.AddCommand(retryShardsCmd)
 }

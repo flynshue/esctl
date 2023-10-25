@@ -14,6 +14,7 @@ import (
 var (
 	client *es.Client
 	esc    *esapi.Client
+	kbn    *esapi.Client
 )
 
 func initEsClient() {
@@ -43,6 +44,13 @@ func initEsClient() {
 	esc.SetAuth(esapi.BasicAuth{Username: viper.GetString("username"), Password: viper.GetString("password")})
 	esc.Headers = map[string]string{"Content-Type": "application/json"}
 	if viper.GetBool("insecure") {
+		esc.SkipTLS()
+	}
+
+	kbn = esapi.NewClient(viper.GetString("kibana.host"))
+	kbn.SetAuth(esapi.BasicAuth{Username: viper.GetString("username"), Password: viper.GetString("password")})
+	kbn.Headers = map[string]string{"Content-Type": "application/json", "kbn-xsrf": "true"}
+	if viper.GetBool("kibana.insecure") {
 		esc.SkipTLS()
 	}
 }

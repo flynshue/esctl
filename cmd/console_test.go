@@ -1,6 +1,8 @@
 package cmd
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestConsole(t *testing.T) {
 	testCases := []struct {
@@ -26,7 +28,7 @@ func TestConsole(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if err := console(tc.method, tc.endpoint, tc.data); err != nil {
+			if err := escConsole(tc.method, tc.endpoint, tc.data); err != nil {
 				t.Error(err)
 			}
 		})
