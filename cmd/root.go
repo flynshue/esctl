@@ -6,9 +6,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/spf13/cobra"
-	// "github.com/spf13/cobra/doc"
 	"github.com/flynshue/esctl/pkg/doc"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -70,8 +69,11 @@ func initConfig() {
 	viper.BindEnv("password")
 	viper.BindEnv("username")
 	viper.BindEnv("hosts")
+	viper.BindEnv("kibana.host", "KIBANA_HOST")
+	viper.BindEnv("kibana.insecure", "KIBANA_INSECURE")
 	viper.SetDefault("username", os.Getenv("USER"))
 	viper.SetDefault("insecure", false)
+	viper.SetDefault("kibana.insecure", false)
 
 	// If a config file is found, read it in.
 	// if err := viper.ReadInConfig(); err == nil {

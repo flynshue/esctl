@@ -83,6 +83,13 @@ var resetCmd = &cobra.Command{
 	},
 }
 
+var retryCmd = &cobra.Command{
+	Use: "retry [command]",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var setCmd = &cobra.Command{
 	Use:   "set [command]",
 	Short: "configure settings on a resource",
@@ -156,6 +163,6 @@ func init() {
 	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
 		versionCmd, topCmd, commandsCmd, setCmd,
 		resetCmd, explainCmd, deleteCmd, createCmd,
-		whoamiCmd,
+		whoamiCmd, retryCmd,
 	)
 }

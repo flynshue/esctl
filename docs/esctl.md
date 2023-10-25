@@ -23,6 +23,7 @@ CLI tool for interacting with elasticsearch API
 * [esctl kbn](esctl_kbn.md)	 - Send HTTP requests Kibana REST API
 * [esctl list](esctl_list.md)	 - list information for resource/s
 * [esctl reset](esctl_reset.md)	 - reset to default for resource/s
+* [esctl retry](esctl_retry.md)	 - 
 * [esctl set](esctl_set.md)	 - configure settings on a resource
 * [esctl top](esctl_top.md)	 - Show elastic cluster stats
 * [esctl version](esctl_version.md)	 - print the client version information
