@@ -255,6 +255,35 @@ func explainClusterAllocation() error {
 	return nil
 }
 
+func setExcludeNode(name string) error {
+	body := fmt.Sprintf(`{
+		"persistent" : {
+		  "cluster.routing.allocation.exclude._name" : "%s"
+		}
+	  }`, name)
+	b, err := putClusterSettings(body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func getExcludedNodes() error {
+	b, err := getClusterSettings("**.cluster.routing.allocation.exclude")
+	if err != nil {
+		return err
+	}
+	settings := map[string]clusterSettings{}
+	if err := json.Unmarshal(b, &settings); err != nil {
+		return err
+	}
+	for level, setting := range settings {
+		fmt.Printf("%s.cluster.routing.allocation.exclude: %+v\n", level, setting.Exclude)
+	}
+	return nil
+}
+
 func putClusterSettings(body string) ([]byte, error) {
 	b := bytes.NewBufferString(body)
 	resp, err := client.Cluster.PutSettings(b)

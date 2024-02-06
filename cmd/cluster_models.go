@@ -33,4 +33,11 @@ type Allocation struct {
 	NodeConcurrentRecov         string `json:"node_concurrent_recoveries,omitempty"`
 	NodeInitialPriRecov         string `json:"node_initial_primaries_recoveries,omitempty"`
 	Type                        string `json:"type,omitempty"`
+	Exclude                     `json:"exclude,omitempty"`
+}
+
+type Exclude struct {
+	Name string `json:"_name,omitempty"`
+	IP   string `json:"_ip,omitempty"`
+	Host string `json:"_host,omitempty"`
 }

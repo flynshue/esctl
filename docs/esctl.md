@@ -18,6 +18,7 @@ CLI tool for interacting with elasticsearch API
 * [esctl delete](esctl_delete.md)	 - 
 * [esctl disable](esctl_disable.md)	 - disable resource/s
 * [esctl enable](esctl_enable.md)	 - enable resource/s
+* [esctl exclude-node](esctl_exclude-node.md)	 - Exclude node/s by name (comma-separated). Move shards off of a node prior to shutting it down
 * [esctl explain](esctl_explain.md)	 - Provides explanation for cluster settings/allocations on resources
 * [esctl get](esctl_get.md)	 - get details for a resource
 * [esctl kbn](esctl_kbn.md)	 - Send HTTP requests Kibana REST API

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -39,6 +40,33 @@ func TestCluster_GetDestructiveRequires(t *testing.T) {
 func TestCluster_SetClusterRebalance(t *testing.T) {
 	if err := setRebalanceThrottle(300); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestCluster_SetExcludeNode(t *testing.T) {
+	testCases := []struct {
+		name  string
+		nodes string
+	}{
+		{"excludeSingleNode", "es-data-01"},
+		{"excludeMultiNode", "es-data-01,es-data-02"},
+		{"clearExcludedNodes", ""},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := setExcludeNode(tc.nodes); err != nil {
+				t.Error(err)
+			}
+			// b, err := getClusterSettings("**.cluster.routing.allocation.exclude")
+			// if err != nil {
+			// 	t.Error(err)
+			// }
+			fmt.Println()
+			if err := getExcludedNodes(); err != nil {
+				t.Error(err)
+			}
+			// fmt.Println(string(b))
+		})
 	}
 }
 
