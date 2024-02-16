@@ -20,6 +20,9 @@ By default, the initial ilm index will be created as <index-prefix-{now/d}-index
 esctl create ilm-index test-filebeat-7d-7.11.2 000001	
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 2 {
+			return fmt.Errorf("must supply index prefix and suffix")
+		}
 		return bootstrapIlmIdx(args[0], args[1])
 	},
 }
