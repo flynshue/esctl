@@ -14,6 +14,12 @@ type Index struct {
 	NumberOfShards   string `json:"number_of_shards"`
 	AutoExpand       string `json:"auto_expand_replicas"`
 	NumberOfReplicas string `json:"number_of_replicas"`
+	Blocks           `json:"blocks"`
+}
+
+type Blocks struct {
+	ReadOnly            string `json:"read_only"`
+	ReadOnlyAllowDelete string `json:"read_only_allow_delete"`
 }
 
 type Lifecycle struct {

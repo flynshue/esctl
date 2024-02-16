@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -48,6 +49,14 @@ var getRebalanceCmd = &cobra.Command{
 	Short:   "show routing allocations for rebalancing and recoveries",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return getClusterRebalance()
+	},
+}
+
+var getWatermarksCmd = &cobra.Command{
+	Use:   "watermarks",
+	Short: "show watermarks when storage marks readonly",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getClusterWatermarks()
 	},
 }
 
@@ -255,6 +264,36 @@ func explainClusterAllocation() error {
 	return nil
 }
 
+func setExcludeNode(name string) error {
+	body := fmt.Sprintf(`{
+		"persistent" : {
+		  "cluster.routing.allocation.exclude._name" : "%s"
+		}
+	  }`, name)
+	b, err := putClusterSettings(body)
+	if err != nil {
+		log.Println("error putClusterSettings() ", err)
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func getExcludedNodes() error {
+	b, err := getClusterSettings("**.cluster.routing.allocation.exclude")
+	if err != nil {
+		return err
+	}
+	settings := map[string]clusterSettings{}
+	if err := json.Unmarshal(b, &settings); err != nil {
+		return err
+	}
+	for level, setting := range settings {
+		fmt.Printf("%s.cluster.routing.allocation.exclude: %+v\n", level, setting.Exclude)
+	}
+	return nil
+}
+
 func putClusterSettings(body string) ([]byte, error) {
 	b := bytes.NewBufferString(body)
 	resp, err := client.Cluster.PutSettings(b)
@@ -265,11 +304,20 @@ func putClusterSettings(body string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+func getClusterWatermarks() error {
+	b, err := getClusterSettings("**.cluster.routing.allocation.disk.watermark.low,**.cluster.routing.allocation.disk.watermark.high,**.cluster.routing.allocation.disk.watermark.flood_stage")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func init() {
 	disableCmd.AddCommand(disableDestructiveRequiresCmd)
 	enableCmd.AddCommand(enableDestructiveRequiresCmd)
 	explainCmd.AddCommand(explainClusterAllocationCmd)
-	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd)
+	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd, getWatermarksCmd)
 	resetCmd.AddCommand(resetRebalanceThrottleCmd)
-	setCmd.AddCommand(setRebalanceThrottleCmd)
+	setCmd.AddCommand(setRebalanceThrottleCmd, setExcludedNodesCmd)
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -42,6 +43,28 @@ func TestCluster_SetClusterRebalance(t *testing.T) {
 	}
 }
 
+func TestCluster_SetExcludeNode(t *testing.T) {
+	testCases := []struct {
+		name  string
+		nodes string
+	}{
+		{"excludeSingleNode", "es-data-01"},
+		{"excludeMultiNode", "es-data-01,es-data-02"},
+		{"clearExcludedNodes", ""},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := setExcludeNode(tc.nodes); err != nil {
+				t.Error(err)
+			}
+			fmt.Println()
+			if err := getExcludedNodes(); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+}
+
 func TestCluster_ResetRebalanceThrottle(t *testing.T) {
 	if err := resetRebalanceThrottle(); err != nil {
 		t.Error(err)
@@ -62,6 +85,12 @@ func TestCluster_EnableDestructiveRequires(t *testing.T) {
 
 func TestCluster_DisableDestructiveRequires(t *testing.T) {
 	if err := disableDestructiveRequires(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCluster_GetClusterWatermarks(t *testing.T) {
+	if err := getClusterWatermarks(); err != nil {
 		t.Error(err)
 	}
 }

@@ -159,6 +159,16 @@ esctl list index date .fleet*
 	},
 }
 
+var listIndexReadOnly = &cobra.Command{
+	Use:     "readonly",
+	Aliases: []string{"ro"},
+	Short:   "show indexes' read_only setting which are enabled (true)",
+	Example: `esctl list index readonly`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getIndexReadonly()
+	},
+}
+
 var listIndexSettingsCmd = &cobra.Command{
 	Use:     "settings [index pattern]",
 	Aliases: []string{"config", "cfg"},
@@ -248,7 +258,8 @@ func init() {
 	getCmd.AddCommand(getIndexCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
-	listIndexCmd.AddCommand(listIdxSizesCmd, listIdxVersionCmd, listIndexTemplatesCmd, listIndexDateCmd, listIndexSettingsCmd)
+	listIndexCmd.AddCommand(listIdxSizesCmd, listIdxVersionCmd, listIndexTemplatesCmd,
+		listIndexDateCmd, listIndexSettingsCmd, listIndexReadOnly)
 	listIndexTemplatesCmd.Flags().BoolVar(&legacy, "legacy", false, "list only legacy index templates")
 	listIndexDateCmd.Flags().BoolVar(&localTime, "local", false, "display index creation timestamps in local time instead of UTC. Default is false.")
 	setCmd.AddCommand(setIndexCmd)

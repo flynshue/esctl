@@ -18,6 +18,7 @@ get details for a resource
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
 * [esctl get destructive-requires](esctl_get_destructive-requires.md)	 - destructive_requires_name setting determines if must specify the index name to delete an index or if you can use wildcards.
+* [esctl get exclude-node](esctl_get_exclude-node.md)	 - list nodes that have been excluded from cluster
 * [esctl get health](esctl_get_health.md)	 - show cluster health
 * [esctl get ilm](esctl_get_ilm.md)	 - get ilm policy details
 * [esctl get index](esctl_get_index.md)	 - get detailed information about one or more index
@@ -27,4 +28,5 @@ get details for a resource
 * [esctl get shards](esctl_get_shards.md)	 - show information about one or more shard
 * [esctl get slm](esctl_get_slm.md)	 - get detailed info about snapshot lifecycle management policy (slm)
 * [esctl get snapshots](esctl_get_snapshots.md)	 - get detailed information about a snapshot
+* [esctl get watermarks](esctl_get_watermarks.md)	 - show watermarks when storage marks readonly
 

@@ -12,6 +12,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var getExcludedNodesCmd = &cobra.Command{
+	Use:   "exclude-node",
+	Short: "list nodes that have been excluded from cluster",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getExcludedNodes()
+	},
+}
+
+var setExcludedNodesCmd = &cobra.Command{
+	Use:   "exclude-node [node/s]",
+	Short: "set nodes to be excluded from cluster",
+	Example: `# clear excluded nodes
+	esctl set exclude-node
+
+	# exclude single node
+	esctl set exclude-node es-data-01
+
+	# exclude multiple nodes
+	esctl set exclude-node es-data-01 es-data-02
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		var nodes string
+		if len(args) != 0 {
+			nodes = strings.Join(args, ",")
+		}
+		return setExcludeNode(nodes)
+	},
+}
+
 // nodesCmd represents the nodes command
 var listNodesCmd = &cobra.Command{
 	Use:     "nodes [command]",
@@ -196,6 +225,7 @@ func listNodesVersion() error {
 func init() {
 	listCmd.AddCommand(listNodesCmd)
 	listNodesCmd.AddCommand(nodeStatsCmd, nodeSuffixesCmd, nodeStorageCmd, nodeFSDetailsCmd, nodeVersionCmd)
+	// rootCmd.AddCommand(excludeNodeCmd)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
