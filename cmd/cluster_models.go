@@ -41,3 +41,15 @@ type Exclude struct {
 	IP   string `json:"_ip,omitempty"`
 	Host string `json:"_host,omitempty"`
 }
+
+type WaterMarksResp struct {
+	SingleDataNode              string `json:"cluster.routing.allocation.disk.watermark.enable_for_single_data_node"`
+	FloodStage                  string `json:"cluster.routing.allocation.disk.watermark.flood_stage"`
+	FloodStageFrozen            string `json:"cluster.routing.allocation.disk.watermark.flood_stage.frozen"`
+	FloodStageFrozenMaxHeadRoom string `json:"cluster.routing.allocation.disk.watermark.flood_stage.frozen.max_headroom"`
+	FloodStageMaxHeadRoom       string `json:"cluster.routing.allocation.disk.watermark.flood_stage.max_headroom"`
+	High                        string `json:"cluster.routing.allocation.disk.watermark.high"`
+	HighMaxHeadRoom             string `json:"cluster.routing.allocation.disk.watermark.high.max_headroom"`
+	Low                         string `json:"cluster.routing.allocation.disk.watermark.low"`
+	LowMaxHeadRoom              string `json:"cluster.routing.allocation.disk.watermark.low.max_headroom"`
+}
