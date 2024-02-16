@@ -57,15 +57,10 @@ func TestCluster_SetExcludeNode(t *testing.T) {
 			if err := setExcludeNode(tc.nodes); err != nil {
 				t.Error(err)
 			}
-			// b, err := getClusterSettings("**.cluster.routing.allocation.exclude")
-			// if err != nil {
-			// 	t.Error(err)
-			// }
 			fmt.Println()
 			if err := getExcludedNodes(); err != nil {
 				t.Error(err)
 			}
-			// fmt.Println(string(b))
 		})
 	}
 }

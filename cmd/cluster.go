@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -263,6 +264,7 @@ func setExcludeNode(name string) error {
 	  }`, name)
 	b, err := putClusterSettings(body)
 	if err != nil {
+		log.Println("error putClusterSettings() ", err)
 		return err
 	}
 	fmt.Println(string(b))
@@ -298,7 +300,7 @@ func init() {
 	disableCmd.AddCommand(disableDestructiveRequiresCmd)
 	enableCmd.AddCommand(enableDestructiveRequiresCmd)
 	explainCmd.AddCommand(explainClusterAllocationCmd)
-	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd)
+	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd)
 	resetCmd.AddCommand(resetRebalanceThrottleCmd)
-	setCmd.AddCommand(setRebalanceThrottleCmd)
+	setCmd.AddCommand(setRebalanceThrottleCmd, setExcludedNodesCmd)
 }

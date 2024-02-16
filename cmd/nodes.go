@@ -12,22 +12,32 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var excludeNodeCmd = &cobra.Command{
-	Use:   "exclude-node [nodes]",
-	Short: "Exclude node/s by name (comma-separated). Move shards off of a node prior to shutting it down",
-	Example: `
-# Exclude single node
-esctl exclude-node es-data-01
+var getExcludedNodesCmd = &cobra.Command{
+	Use:   "exclude-node",
+	Short: "list nodes that have been excluded from cluster",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getExcludedNodes()
+	},
+}
 
-# Exclude multiple nodes
-esctl exclude-node es-data-01,es-data-02
+var setExcludedNodesCmd = &cobra.Command{
+	Use:   "exclude-node [node/s]",
+	Short: "set nodes to be excluded from cluster",
+	Example: `# clear excluded nodes
+	esctl set exclude-node
+
+	# exclude single node
+	esctl set exclude-node es-data-01
+
+	# exclude multiple nodes
+	esctl set exclude-node es-data-01 es-data-02
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("must supply node name")
+		var nodes string
+		if len(args) != 0 {
+			nodes = strings.Join(args, ",")
 		}
-		fmt.Printf("will exclude node %s\n", args[0])
-		return nil
+		return setExcludeNode(nodes)
 	},
 }
 
@@ -215,7 +225,7 @@ func listNodesVersion() error {
 func init() {
 	listCmd.AddCommand(listNodesCmd)
 	listNodesCmd.AddCommand(nodeStatsCmd, nodeSuffixesCmd, nodeStorageCmd, nodeFSDetailsCmd, nodeVersionCmd)
-	rootCmd.AddCommand(excludeNodeCmd)
+	// rootCmd.AddCommand(excludeNodeCmd)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
