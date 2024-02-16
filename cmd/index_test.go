@@ -107,6 +107,23 @@ func TestIndex_GetIndexSettings(t *testing.T) {
 	}
 }
 
+func TestIndex_GetIndexReadonly(t *testing.T) {
+	index := "test-read-only"
+	if err := escConsole("put", index, nil); err != nil {
+		t.Error(err)
+	}
+	defer func() {
+		setIndexSettings(index, `{"index.blocks.read_only": "false"}`)
+		deleteIndex([]string{index})
+	}()
+	if err := escConsole("put", fmt.Sprintf("%s/_block/read_only", index), nil); err != nil {
+		t.Error(err)
+	}
+	if err := getIndexReadonly(); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestIndex_SetIndexReplicas(t *testing.T) {
 	index := "test-idx-replicas"
 	if err := escConsole("put", index, nil); err != nil {

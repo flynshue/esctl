@@ -28,4 +28,5 @@ get details for a resource
 * [esctl get shards](esctl_get_shards.md)	 - show information about one or more shard
 * [esctl get slm](esctl_get_slm.md)	 - get detailed info about snapshot lifecycle management policy (slm)
 * [esctl get snapshots](esctl_get_snapshots.md)	 - get detailed information about a snapshot
+* [esctl get watermarks](esctl_get_watermarks.md)	 - show watermarks when storage marks readonly
 

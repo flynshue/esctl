@@ -88,3 +88,9 @@ func TestCluster_DisableDestructiveRequires(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestCluster_GetClusterWatermarks(t *testing.T) {
+	if err := getClusterWatermarks(); err != nil {
+		t.Error(err)
+	}
+}

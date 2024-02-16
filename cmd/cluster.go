@@ -52,6 +52,14 @@ var getRebalanceCmd = &cobra.Command{
 	},
 }
 
+var getWatermarksCmd = &cobra.Command{
+	Use:   "watermarks",
+	Short: "show watermarks when storage marks readonly",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return getClusterWatermarks()
+	},
+}
+
 var setRebalanceThrottleCmd = &cobra.Command{
 	Use:     "rebalance-throttle [size in megabytes]",
 	Aliases: []string{"throttle"},
@@ -296,11 +304,20 @@ func putClusterSettings(body string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+func getClusterWatermarks() error {
+	b, err := getClusterSettings("**.cluster.routing.allocation.disk.watermark.low,**.cluster.routing.allocation.disk.watermark.high,**.cluster.routing.allocation.disk.watermark.flood_stage")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
 func init() {
 	disableCmd.AddCommand(disableDestructiveRequiresCmd)
 	enableCmd.AddCommand(enableDestructiveRequiresCmd)
 	explainCmd.AddCommand(explainClusterAllocationCmd)
-	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd)
+	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd, getWatermarksCmd)
 	resetCmd.AddCommand(resetRebalanceThrottleCmd)
 	setCmd.AddCommand(setRebalanceThrottleCmd, setExcludedNodesCmd)
 }

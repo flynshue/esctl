@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 )
 
 func catIndices(columns, sort, format string, idxPattern []string) ([]byte, error) {
@@ -252,4 +253,33 @@ func setIndexSettings(index, body string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
+}
+
+func getIndexReadonly() error {
+	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithFlatSettings(false),
+		client.Indices.GetSettings.WithIndex("_all"),
+		client.Indices.GetSettings.WithFilterPath("**.index.blocks.read_only*"),
+		client.Indices.GetSettings.WithExpandWildcards("open"),
+		client.Indices.GetSettings.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	idxs := map[string]listIndexSettingsResp{}
+	if err := json.Unmarshal(b, &idxs); err != nil {
+		return err
+	}
+	w := newTabWriter()
+	fmt.Fprintln(w, "index\t index.blocks.read_only\t index.blocks.read_only_allow_delete\t")
+	for idx, setting := range idxs {
+		ro, _ := strconv.ParseBool(setting.ReadOnly)
+		allowDelete, _ := strconv.ParseBool(setting.ReadOnlyAllowDelete)
+		if ro || allowDelete {
+			fmt.Fprintf(w, "%s\t %v\t %v\t\n", idx, ro, allowDelete)
+		}
+	}
+	w.Flush()
+	return nil
 }
