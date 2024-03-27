@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	filterPath string
+)
+
 var disableDestructiveRequiresCmd = &cobra.Command{
 	Use:   "destructive-requires",
 	Short: "disables destructive_requires_name, wildcards are allowed for deleting indexing",
@@ -30,8 +34,29 @@ var enableDestructiveRequiresCmd = &cobra.Command{
 var getClusterCmd = &cobra.Command{
 	Use:   "cluster [command]",
 	Short: "show cluster info",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		initEsClient()
+}
+
+var getClusterSettingsCmd = &cobra.Command{
+	Use:   "settings",
+	Short: "Get cluster-wide settings",
+	Long: `Returns cluster-wide settings in json. You can filter responses using --filter-path
+This command is useful for when no command exist to pull back the cluster setting you want to find but also don't feel like writing out the full endpoint url using the esc/console command.`,
+	Example: `# Get all cluster settings
+esctl get cluster settings
+
+# Get cluster settings using filter
+esctl get cluster settings --filter-path "**.routing"
+
+# Get cluster settings using multiple filters
+esctl get cluster settings --filter-path "**.routing,**.recovery"
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		b, err := getClusterSettings(filterPath)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(b))
+		return nil
 	},
 }
 
@@ -382,7 +407,12 @@ func init() {
 	disableCmd.AddCommand(disableDestructiveRequiresCmd)
 	enableCmd.AddCommand(enableDestructiveRequiresCmd)
 	explainCmd.AddCommand(explainClusterAllocationCmd)
-	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd, getWatermarksCmd)
+	getCmd.AddCommand(getRebalanceCmd, getDestructiveRequiresCmd, getExcludedNodesCmd,
+		getWatermarksCmd, getClusterCmd)
 	resetCmd.AddCommand(resetRebalanceThrottleCmd)
 	setCmd.AddCommand(setRebalanceThrottleCmd, setExcludedNodesCmd)
+	getClusterCmd.AddCommand(getClusterSettingsCmd)
+	getClusterSettingsCmd.Flags().StringVar(&filterPath, "filter-path", "", `takes a comma separated list of filters expressed with the dot notation.
+See https://www.elastic.co/guide/en/elasticsearch/reference/8.11/common-options.html#common-options-response-filtering.
+	`)
 }

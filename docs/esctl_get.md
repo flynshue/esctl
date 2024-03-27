@@ -17,6 +17,7 @@ get details for a resource
 ### SEE ALSO
 
 * [esctl](esctl.md)	 - CLI tool for interacting with elasticsearch API
+* [esctl get cluster](esctl_get_cluster.md)	 - show cluster info
 * [esctl get destructive-requires](esctl_get_destructive-requires.md)	 - destructive_requires_name setting determines if must specify the index name to delete an index or if you can use wildcards.
 * [esctl get exclude-node](esctl_get_exclude-node.md)	 - list nodes that have been excluded from cluster
 * [esctl get health](esctl_get_health.md)	 - show cluster health
