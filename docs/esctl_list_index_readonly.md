@@ -2,6 +2,11 @@
 
 show indexes' read_only setting which are enabled (true)
 
+### Synopsis
+
+The disk-based shard allocator may add and remove the index.blocks.read_only_allow_delete block automatically due to flood stage watermark.
+Please see https://www.elastic.co/guide/en/elasticsearch/reference/8.11/index-modules-blocks.html#index-block-settings for more details.
+
 ```
 esctl list index readonly [flags]
 ```
