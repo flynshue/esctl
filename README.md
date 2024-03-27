@@ -41,6 +41,11 @@ To set the hosts:
 export ES_HOSTS="https://es-data-01d.lab1.example:9200 https://es-data-01e.lab1.example:9200"
 ```
 
+To disable tls verify
+```bash
+export ES_INSECURE=true
+```
+
 You can also use a configuration file instead.
 ```bash
 vim ~/.esctl-lab.yaml 
