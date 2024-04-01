@@ -22,6 +22,8 @@ var deleteIndexCmd = &cobra.Command{
 	Long: `Starting with Elasticsearch 8.x, by default, the delete index API call does not support wildcards (*) or _all. 
 To use wildcards or _all, set the action.destructive_requires_name cluster setting to false.
 See https://www.elastic.co/guide/en/elasticsearch/reference/8.10/index-management-settings.html#action-destructive-requires-name
+
+You can use 'esctl disable destructive-requires' to disable this feature and to allow wildcards for deleting index
 	`,
 	Example: `# delete specific index
 esctl delete index test-logs
@@ -59,6 +61,24 @@ esctl delete index test-logs-*
 	},
 }
 
+var disableReadOnlyIdxCmd = &cobra.Command{
+	Use:     "readonly [index/index pattern]",
+	Aliases: []string{"ro"},
+	Short:   "Disable readonly for one or more index",
+	Example: `# Disable read only for specific index
+esctl disable readonly test-idx-002
+
+# disable read only index pattern
+esctl disable readonly test-idx-1*
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("must supply index or index pattern")
+		}
+		return disableReadOnlyIdx(args[0])
+	},
+}
+
 // indexCmd represents the index command
 var getIndexCmd = &cobra.Command{
 	Use:     "index [command]",
@@ -80,7 +100,7 @@ esctl get index settings .fleet-*
 		if len(args) == 0 {
 			return fmt.Errorf("must supply index or index pattern")
 		}
-		b, err := getIndexSettings(args[0])
+		b, err := getIndexSettings(args[0], "", "")
 		if err != nil {
 			return err
 		}
@@ -163,6 +183,10 @@ var listIndexReadOnly = &cobra.Command{
 	Use:     "readonly",
 	Aliases: []string{"ro"},
 	Short:   "show indexes' read_only setting which are enabled (true)",
+	Long: `The disk-based shard allocator may add and remove the index.blocks.read_only_allow_delete block automatically due to flood stage watermark.
+Please see https://www.elastic.co/guide/en/elasticsearch/reference/8.11/index-modules-blocks.html#index-block-settings for more details.
+
+You can use 'esctl disable readonly [index/index pattern] to disable readonly on index/index pattern'`,
 	Example: `esctl list index readonly`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return getIndexReadonly()
@@ -255,6 +279,7 @@ var setIndexReplicasCmd = &cobra.Command{
 func init() {
 	deleteCmd.AddCommand(deleteIndexCmd)
 	deleteIndexCmd.PersistentFlags().BoolVar(&force, "force", false, "If true, immediately delete without confirmation")
+	disableCmd.AddCommand(disableReadOnlyIdxCmd)
 	getCmd.AddCommand(getIndexCmd)
 	getIndexCmd.AddCommand(getIndexTemplateCmd, getIndexSettingsCmd)
 	listCmd.AddCommand(listIndexCmd)
