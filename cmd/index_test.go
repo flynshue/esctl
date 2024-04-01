@@ -187,3 +187,37 @@ func TestIndex_DeleteIndex(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestIndex_DisableReadOnly(t *testing.T) {
+	indices := []string{
+		"test-all-indices-001",
+		"test-all-indices-002",
+		"test-all-indices-003",
+		"test-readonly-one",
+		"test-readonly-101",
+		"test-readonly-102",
+		"test-readonly-103",
+	}
+	testCases := []struct {
+		name         string
+		indexPattern string
+	}{
+		{"oneIndex", "test-readonly-one"},
+		{"pattern", "test-readonly-1*"},
+		{"all", "*"},
+	}
+	for _, idx := range indices {
+		escConsole("put", idx, nil)
+		escConsole("put", fmt.Sprintf("%s/_block/read_only", idx), nil)
+	}
+	defer deleteIndex([]string{"test-*"})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			getIndexReadonly()
+			if err := disableReadOnlyIdx(tc.indexPattern); err != nil {
+				t.Error(err)
+			}
+			getIndexReadonly()
+		})
+	}
+}

@@ -51,11 +51,28 @@ func deleteIndex(idxPattern []string) error {
 	return nil
 }
 
-func getIndexSettings(idxPattern string) ([]byte, error) {
+func disableReadOnlyIdx(idxPattern string) error {
+	body := `{"index.blocks.read_only":"false", "index.blocks.read_only_allow_delete":"false"}`
+	b, err := setIndexSettings(idxPattern, body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func getIndexSettings(idxPattern, filterPath, expandWildCards string) ([]byte, error) {
+	switch expandWildCards {
+	case "open":
+	case "closed":
+	default:
+		expandWildCards = "all"
+	}
 	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithIndex(idxPattern),
-		client.Indices.GetSettings.WithExpandWildcards("all"),
+		client.Indices.GetSettings.WithExpandWildcards(expandWildCards),
 		client.Indices.GetSettings.WithHuman(),
 		client.Indices.GetSettings.WithPretty(),
+		client.Indices.GetSettings.WithFilterPath(filterPath),
 	)
 	if err != nil {
 		return nil, err
@@ -158,7 +175,7 @@ func listIndexTemplatesLegacy(pattern string) error {
 }
 
 func listIndexSettingsSummary(idxPattern string) error {
-	b, err := getIndexSettings(idxPattern)
+	b, err := getIndexSettings(idxPattern, "", "")
 	if err != nil {
 		return err
 	}
@@ -256,17 +273,10 @@ func setIndexSettings(index, body string) ([]byte, error) {
 }
 
 func getIndexReadonly() error {
-	resp, err := client.Indices.GetSettings(client.Indices.GetSettings.WithFlatSettings(false),
-		client.Indices.GetSettings.WithIndex("_all"),
-		client.Indices.GetSettings.WithFilterPath("**.index.blocks.read_only*"),
-		client.Indices.GetSettings.WithExpandWildcards("open"),
-		client.Indices.GetSettings.WithPretty(),
-	)
+	b, err := getIndexSettings("", "**.index.blocks.read_only*", "open")
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
 	idxs := map[string]listIndexSettingsResp{}
 	if err := json.Unmarshal(b, &idxs); err != nil {
 		return err

@@ -7,6 +7,8 @@ delete index/index pattern
 Starting with Elasticsearch 8.x, by default, the delete index API call does not support wildcards (*) or _all. 
 To use wildcards or _all, set the action.destructive_requires_name cluster setting to false.
 See https://www.elastic.co/guide/en/elasticsearch/reference/8.10/index-management-settings.html#action-destructive-requires-name
+
+You can use 'esctl disable destructive-requires' to disable this feature and to allow wildcards for deleting index
 	
 
 ```
