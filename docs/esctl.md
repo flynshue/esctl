@@ -12,6 +12,7 @@ CLI tool for interacting with elasticsearch API
 
 ### SEE ALSO
 
+* [esctl clear](esctl_clear.md)	 - clear resources
 * [esctl commands](esctl_commands.md)	 - List all the commands available
 * [esctl console](esctl_console.md)	 - Send HTTP requests Elasticsearch REST API
 * [esctl create](esctl_create.md)	 - Create resources

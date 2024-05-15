@@ -9,8 +9,6 @@ esctl set exclude-node [node/s] [flags]
 ### Examples
 
 ```
-# clear excluded nodes
-	esctl set exclude-node
 
 	# exclude single node
 	esctl set exclude-node es-data-01
