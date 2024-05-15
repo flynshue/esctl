@@ -228,6 +228,7 @@ func listNodesVersion() error {
 }
 
 func init() {
+	clearCmd.AddCommand(clearExcludedNodesCmd)
 	listCmd.AddCommand(listNodesCmd)
 	listNodesCmd.AddCommand(nodeStatsCmd, nodeSuffixesCmd, nodeStorageCmd, nodeFSDetailsCmd, nodeVersionCmd)
 	// rootCmd.AddCommand(excludeNodeCmd)
