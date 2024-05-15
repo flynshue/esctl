@@ -12,6 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var clearExcludedNodesCmd = &cobra.Command{
+	Use:   "exclude-node",
+	Short: "Add nodes that have been excluded from cluster back",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return setExcludeNode("")
+	},
+}
+
 var getExcludedNodesCmd = &cobra.Command{
 	Use:   "exclude-node",
 	Short: "list nodes that have been excluded from cluster",
@@ -23,9 +31,7 @@ var getExcludedNodesCmd = &cobra.Command{
 var setExcludedNodesCmd = &cobra.Command{
 	Use:   "exclude-node [node/s]",
 	Short: "set nodes to be excluded from cluster",
-	Example: `# clear excluded nodes
-	esctl set exclude-node
-
+	Example: `
 	# exclude single node
 	esctl set exclude-node es-data-01
 
@@ -33,11 +39,10 @@ var setExcludedNodesCmd = &cobra.Command{
 	esctl set exclude-node es-data-01 es-data-02
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var nodes string
-		if len(args) != 0 {
-			nodes = strings.Join(args, ",")
+		if len(args) == 0 {
+			return fmt.Errorf("must supply node name to exclude")
 		}
-		return setExcludeNode(nodes)
+		return setExcludeNode(strings.Join(args, ","))
 	},
 }
 

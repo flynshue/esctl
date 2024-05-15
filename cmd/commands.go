@@ -8,6 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var clearCmd = &cobra.Command{
+	Use:   "clear [command]",
+	Short: "clear resources",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		initEsClient()
+	},
+}
+
 var commandsCmd = &cobra.Command{
 	Use:     "commands [command]",
 	Short:   "List all the commands available",
@@ -161,7 +169,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(disableCmd, getCmd, listCmd, enableCmd,
-		versionCmd, topCmd, commandsCmd, setCmd,
+		versionCmd, topCmd, clearCmd, commandsCmd, setCmd,
 		resetCmd, explainCmd, deleteCmd, createCmd,
 		whoamiCmd, retryCmd,
 	)
